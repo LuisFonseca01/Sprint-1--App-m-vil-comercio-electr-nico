@@ -1,0 +1,52 @@
+import { MaterialIcons } from '@expo/vector-icons';
+import { colors } from '../theme';
+
+const iconNames = {
+  'home-variant-outline': 'home',
+  'home-variant': 'home',
+  'view-grid-outline': 'grid-view',
+  'view-grid': 'grid-view',
+  'cart-outline': 'shopping-cart',
+  cart: 'shopping-cart',
+  'cart-variant': 'shopping-cart',
+  'cart-lock': 'lock',
+  'cart-off': 'remove-shopping-cart',
+  'cart-plus': 'add-shopping-cart',
+  'account-outline': 'person-outline',
+  'account-circle-outline': 'account-circle',
+  'account-circle': 'account-circle',
+  'account-plus-outline': 'person-add',
+  'heart-outline': 'favorite-border',
+  heart: 'favorite',
+  star: 'star',
+  plus: 'add',
+  magnify: 'search',
+  'tune-variant': 'tune',
+  'filter-variant': 'filter-list',
+  sale: 'local-offer',
+  'arrow-right': 'arrow-forward',
+  'arrow-right-circle': 'arrow-circle-right',
+  'arrow-left': 'arrow-back',
+  'share-variant-outline': 'share',
+  'check-circle-outline': 'check-circle-outline',
+  'trash-can-outline': 'delete-outline',
+  'logout-variant': 'logout',
+  logout: 'logout',
+  'login-variant': 'login',
+  login: 'login',
+  'package-variant-closed': 'inventory-2',
+  lifebuoy: 'support-agent',
+  'help-circle-outline': 'help-outline',
+  'lock-outline': 'lock-outline',
+  'chevron-right': 'chevron-right',
+  'truck-fast-outline': 'local-shipping',
+  'controller-classic-outline': 'sports-esports',
+  'expansion-card-variant': 'developer-board',
+  chip: 'memory',
+  'desk-lamp': 'light',
+  memory: 'memory',
+};
+
+export default function Icon({ name, size = 22, color = colors.white }) {
+  return <MaterialIcons name={iconNames[name] || name} size={size} color={color} />;
+}
