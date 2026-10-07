@@ -5,7 +5,7 @@ import Icon from '../components/Icon';
 import ProductCard from '../components/ProductCard';
 import CategoryPills from '../components/CategoryPills';
 import BottomNav from '../components/BottomNav';
-import { latest, offers, products } from '../data/products';
+import { latest, offers, products as seedProducts } from '../data/products';
 import { colors, shadow } from '../theme';
 
 function Section({ title, action, children }) {
@@ -16,7 +16,7 @@ function HorizontalProducts({ data, navigation, favorites, onToggleFavorite }) {
   return <FlatList horizontal data={data} keyExtractor={(item) => item.id} showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalProducts} renderItem={({ item }) => <ProductCard product={item} compact isFavorite={favorites.some((favorite) => favorite.id === item.id)} onToggleFavorite={() => onToggleFavorite(item)} onPress={() => navigation.navigate('Product', { product: item })} />} />;
 }
 
-export default function HomeScreen({ navigation, cartCount, favorites = [], onToggleFavorite }) {
+export default function HomeScreen({ navigation, cartCount, favorites = [], products = seedProducts, onToggleFavorite, user }) {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [search, setSearch] = useState('');
   const normalizedSearch = search.trim().toLowerCase();
@@ -24,7 +24,7 @@ export default function HomeScreen({ navigation, cartCount, favorites = [], onTo
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.fixedHeader}>
-        <View style={styles.topBar}><View><Text style={styles.eyebrow}>BIENVENIDO A</Text><Text style={styles.brand}>game<Text style={styles.brandAccent}>cube</Text></Text></View><Pressable style={styles.cartButton} onPress={() => navigation.navigate('Main', { screen: 'cart' })}><Icon name="cart-variant" size={24} />{cartCount > 0 && <View style={styles.cartBadge}><Text style={styles.badgeText}>{cartCount}</Text></View>}</Pressable></View>
+        <View style={styles.topBar}><View><Text style={styles.eyebrow}>BIENVENIDO A</Text><Text style={styles.brand}>game<Text style={styles.brandAccent}>cube</Text></Text></View><View style={styles.headerActions}>{user?.role === 'admin' && <Pressable style={styles.panelButton} onPress={() => navigation.navigate('AdminDashboard')} accessibilityLabel="Abrir panel administrador"><Icon name="dashboard" size={21} color={colors.lime} /></Pressable>}<Pressable style={styles.cartButton} onPress={() => navigation.navigate('Main', { screen: 'cart' })}><Icon name="cart-variant" size={24} />{cartCount > 0 && <View style={styles.cartBadge}><Text style={styles.badgeText}>{cartCount}</Text></View>}</Pressable></View></View>
         <View style={styles.search}><Icon name="magnify" size={23} color={colors.purpleBright} /><TextInput value={search} onChangeText={setSearch} placeholder="Busca tu próximo upgrade" placeholderTextColor={colors.muted} style={styles.searchInput} /><Pressable accessibilityLabel="Filtrar productos"><Icon name="tune-variant" size={21} color={colors.purpleBright} /></Pressable></View>
       </View>
       <FlatList
@@ -53,6 +53,8 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 18, paddingTop: 18, paddingBottom: 105 },
   fixedHeader: { backgroundColor: colors.background, paddingHorizontal: 18, zIndex: 20, elevation: 12, boxShadow: '0px 6px 10px rgba(0, 0, 0, 0.3)' },
   topBar: { paddingTop: 12, paddingBottom: 18, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  panelButton: { width: 45, height: 45, borderRadius: 15, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.lime },
   eyebrow: { color: colors.muted, fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
   brand: { color: colors.white, fontSize: 31, fontWeight: '900', letterSpacing: -1.2 },
   brandAccent: { color: colors.purpleBright },

@@ -4,10 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from '../components/Icon';
 import ProductCard from '../components/ProductCard';
 import BottomNav from '../components/BottomNav';
-import { categories, products } from '../data/products';
+import { categories, products as seedProducts } from '../data/products';
 import { colors, shadow } from '../theme';
 
-export default function CategoriesScreen({ navigation, cartCount, favorites = [], onToggleFavorite }) {
+export default function CategoriesScreen({ navigation, cartCount, favorites = [], products = seedProducts, onToggleFavorite }) {
   const [selected, setSelected] = useState('all');
   const selectedCategory = categories.find((item) => item.id === selected);
   const shown = products.filter((item) => selected === 'all' || item.category === selected);

@@ -6,6 +6,7 @@ export default function BottomNav({ active, navigation, cartCount }) {
   const items = [
     { id: 'home', label: 'Inicio', icon: 'home-variant-outline', activeIcon: 'home-variant' },
     { id: 'categories', label: 'Categorías', icon: 'view-grid-outline', activeIcon: 'view-grid' },
+    { id: 'favorites', label: 'Favoritos', icon: 'heart-outline', activeIcon: 'heart' },
     { id: 'cart', label: 'Carrito', icon: 'cart-outline', activeIcon: 'cart' },
     { id: 'profile', label: 'Perfil', icon: 'account-circle-outline', activeIcon: 'account-circle' },
   ];

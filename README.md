@@ -4,7 +4,7 @@ Este es el primer Sprint backlog del proyecto para la elaboración de una app mo
 
 Gamecube es una app de comercio electrónico sobre productos gaming. Puedes ver productos, buscarlos, registrarte, iniciar sesión, añadir productos al carrito y comprar.
 
-La aplicación está hecha con Expo y React Native. Los usuarios, productos, carritos y compras se guardan en MongoDB Atlas.
+La aplicación está hecha con Expo y React Native. Los usuarios, productos y carritos se guardan en MongoDB Atlas; los pedidos de demostración se guardan localmente en el dispositivo.
 
 
 ## Qué necesitas
@@ -44,7 +44,6 @@ MONGO_URI=mongodb+srv://USUARIO:CONTRASENA@CLUSTER.mongodb.net/gamecube?retryWri
 JWT_SECRET=pon-aqui-una-clave-larga
 ```
 
-
 ## 3. Configurar Expo
 
 Copia la plantilla:
@@ -59,7 +58,7 @@ Si usas el navegador o un emulador en la computadora, deja esta dirección:
 EXPO_PUBLIC_API_URL=http://localhost:5000/api
 ```
 
-Si usas un celular físico, busca la IP de tu ordenador con:
+Si usas un celular físico, reemplaza `localhost` por la IP de tu ordenador:
 
 ```powershell
 ipconfig
@@ -84,6 +83,10 @@ npm.cmd --prefix server run seed
 Esto carga los productos de `src/data/products.js` en la colección `products`.
 
 ## 5. Ejecuta el proyecto
+
+Los métodos de pago son una simulación local: puedes probar tarjeta con `4242 4242 4242 4242`, vencimiento futuro y CVC `123`, o elegir PayPal, transferencia o efectivo. No se hacen cargos ni se envían datos de pago a servicios externos. Los pedidos de usuarios conectados se guardan en MongoDB para que el administrador pueda cambiar el estado; los pedidos en modo sin conexión se guardan en el dispositivo.
+
+Desde el perfil puedes consultar el historial, filtrar pedidos por fecha o estado y desplegar sus productos y dirección. El chat de soporte actualiza mensajes automáticamente; en modo sin conexión responde con un mensaje de demostración.
 
 Primero abre una terminal y arranca el backend:
 

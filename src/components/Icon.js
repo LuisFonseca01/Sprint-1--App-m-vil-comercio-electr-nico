@@ -29,6 +29,14 @@ const iconNames = {
   'arrow-left': 'arrow-back',
   'share-variant-outline': 'share',
   'check-circle-outline': 'check-circle-outline',
+  'credit-card-outline': 'credit-card',
+  paypal: 'payment',
+  'bank-outline': 'account-balance',
+  'store-outline': 'store',
+  chat: 'chat',
+  send: 'send',
+  'expand-less': 'expand-less',
+  'expand-more': 'expand-more',
   'trash-can-outline': 'delete-outline',
   'logout-variant': 'logout',
   logout: 'logout',
@@ -45,6 +53,12 @@ const iconNames = {
   chip: 'memory',
   'desk-lamp': 'light',
   memory: 'memory',
+  people: 'people',
+  'trending-up': 'trending-up',
+  'receipt-long': 'receipt-long',
+  dashboard: 'dashboard',
+  edit: 'edit',
+  image: 'image',
 };
 
 export default function Icon({ name, size = 22, color = colors.white }) {
