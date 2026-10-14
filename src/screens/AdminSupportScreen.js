@@ -60,7 +60,7 @@ export default function AdminSupportScreen({ navigation, token }) {
         <Pressable style={styles.back} onPress={() => navigation.goBack()}><Icon name="arrow-left" size={21} color={colors.white} /></Pressable>
         <View><Text style={styles.kicker}>ADMINISTRACIÓN</Text><Text style={styles.title}>Soporte</Text></View>
       </View>
-      {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
+      {errorMessage ? <View style={styles.errorCard}><Icon name="information-outline" size={17} color={colors.danger} /><Text style={styles.error}>{errorMessage}</Text></View> : null}
       {conversations === null ? <ActivityIndicator color={colors.lime} style={styles.loader} /> : conversations.length === 0 ? <View style={styles.empty}>
         <Icon name="chat" size={40} color={colors.purpleBright} />
         <Text style={styles.emptyText}>Aún no hay conversaciones.</Text>
@@ -107,7 +107,8 @@ const styles = StyleSheet.create({
   back: { width: 39, height: 39, borderRadius: 12, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   kicker: { color: colors.purpleBright, fontSize: 9, fontWeight: '900', letterSpacing: 1.3 },
   title: { color: colors.white, fontSize: 23, fontWeight: '900', marginTop: 3 },
-  error: { color: colors.danger, fontSize: 11, padding: 12 },
+  errorCard: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#321A25', borderWidth: 1, borderColor: '#693440', borderRadius: 10, padding: 9, marginHorizontal: 14, marginBottom: 8 },
+  error: { color: colors.danger, fontSize: 11, flex: 1 },
   loader: { flex: 1 },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   emptyText: { color: colors.muted, fontSize: 12 },

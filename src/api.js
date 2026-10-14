@@ -18,7 +18,7 @@ async function writeJson(key, value) {
 }
 
 function publicUser(user) {
-  return { id: user.id, name: user.name, email: user.email, role: user.role || 'customer', createdAt: user.createdAt };
+  return { id: user.id, name: user.name, email: user.email, role: user.role || 'customer', phone: user.phone || '', address: user.address || '', photo: user.photo || '', createdAt: user.createdAt };
 }
 
 function localKey(type, token) {
@@ -26,6 +26,18 @@ function localKey(type, token) {
 }
 
 async function request(path, options = {}, token) {
+  try {
+    return await requestRemote(path, options, token);
+  } catch (error) {
+    if (error.status) throw error;
+    const connectionError = new Error('No se pudo conectar con la tienda. Revisa tu conexión a internet y vuelve a intentarlo.');
+    connectionError.status = 503;
+    connectionError.code = 'NETWORK_ERROR';
+    throw connectionError;
+  }
+}
+
+async function requestRemote(path, options = {}, token) {
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
     headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...options.headers },
@@ -54,39 +66,41 @@ export const authApi = {
     const name = payload.name?.trim();
     const email = payload.email?.trim().toLowerCase();
     if (!name || !email || !payload.password || payload.password.length < 6) throw new Error('Nombre, email y una contraseña de 6 caracteres son obligatorios');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Escribe un correo electrónico válido.');
     try {
       return await storeSession(await request('/auth/register', {
         method: 'POST',
         body: JSON.stringify({ name, email, password: payload.password }),
       }));
     } catch (error) {
-      if (error.status) throw error;
+      if (error.code !== 'NETWORK_ERROR') throw error;
+      const users = await readJson(USERS_KEY, []);
+      if (users.some((user) => user.email === email)) throw new Error('Ya existe una cuenta local con ese correo.');
+      const user = { id: `local-user-${Date.now()}`, name, email, password: payload.password, role: 'customer', createdAt: new Date().toISOString() };
+      await writeJson(USERS_KEY, [...users, user]);
+      return storeSession({ user: publicUser(user), token: user.id, offline: true });
     }
-    const users = await readJson(USERS_KEY, []);
-    if (users.some((user) => user.email === email)) throw new Error('Ya existe una cuenta con ese email');
-    const user = { id: `local-user-${Date.now()}`, name, email, password: payload.password, role: 'customer', createdAt: new Date().toISOString() };
-    await writeJson(USERS_KEY, [...users, user]);
-    return storeSession({ user: publicUser(user), token: user.id });
   },
   async login(payload) {
     const email = payload.email?.trim().toLowerCase();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !payload.password) throw new Error('Escribe un correo electrónico y una contraseña válidos.');
     try {
       return await storeSession(await request('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password: payload.password }),
       }));
     } catch (error) {
-      if (error.status) throw error;
+      if (error.code !== 'NETWORK_ERROR') throw error;
+      if (email === 'admin@gamecube.mx' && payload.password === 'admin123') {
+        const admin = { id: 'local-admin', name: 'Administrador', email, password: payload.password, role: 'admin', createdAt: new Date().toISOString() };
+        await writeJson(USERS_KEY, [...(await readJson(USERS_KEY, [])).filter((user) => user.id !== admin.id), admin]);
+        return storeSession({ user: publicUser(admin), token: admin.id, offline: true });
+      }
+      const users = await readJson(USERS_KEY, []);
+      const user = users.find((item) => item.email === email && item.password === payload.password);
+      if (!user) throw new Error('No hay conexión con la tienda y no encontramos una cuenta local con esos datos. Conéctate o inicia el servidor para usar tu cuenta.');
+      return storeSession({ user: publicUser(user), token: user.id, offline: true });
     }
-    if (email === 'admin@gamecube.mx' && payload.password === 'admin123') {
-      const admin = { id: 'local-admin', name: 'Administrador', email, role: 'admin', createdAt: new Date().toISOString() };
-      await writeJson(USERS_KEY, [...(await readJson(USERS_KEY, [])).filter((user) => user.id !== admin.id), admin]);
-      return storeSession({ user: publicUser(admin), token: admin.id });
-    }
-    const users = await readJson(USERS_KEY, []);
-    const user = users.find((item) => item.email === email && item.password === payload.password);
-    if (!user) throw new Error('Email o contraseña incorrectos');
-    return storeSession({ user: publicUser(user), token: user.id });
   },
   async restore() {
     const token = await AsyncStorage.getItem(SESSION_KEY);
@@ -112,32 +126,53 @@ export const authApi = {
     await AsyncStorage.removeItem(SESSION_KEY);
     await AsyncStorage.removeItem(SESSION_USER_KEY);
   },
+  async updateProfile(payload, token) {
+    const name = payload.name?.trim();
+    if (!name) throw new Error('Escribe tu nombre antes de guardar los cambios.');
+    if (payload.newPassword && (!payload.currentPassword || payload.newPassword.length < 8)) {
+      throw new Error('Para cambiar la contraseña, escribe la actual y una nueva de al menos 8 caracteres.');
+    }
+    if (!isLocalToken(token)) {
+      const result = await request('/auth/profile', {
+        method: 'PATCH',
+        body: JSON.stringify({ ...payload, name }),
+      }, token);
+      await AsyncStorage.setItem(SESSION_USER_KEY, JSON.stringify(result.user));
+      return result;
+    }
+    const users = await readJson(USERS_KEY, []);
+    const account = users.find((item) => item.id === token);
+    if (!account) throw new Error('No se encontró tu cuenta local. Cierra sesión e inténtalo de nuevo.');
+    const legacyAdminPasswordMatches = token === 'local-admin' && !account.password && payload.currentPassword === 'admin123';
+    if (payload.newPassword && account.password !== payload.currentPassword && !legacyAdminPasswordMatches) throw new Error('La contraseña actual no coincide.');
+    const updated = {
+      ...account,
+      name,
+      phone: payload.phone || '',
+      address: payload.address || '',
+      photo: payload.photo || '',
+      ...(payload.newPassword ? { password: payload.newPassword } : {}),
+    };
+    await writeJson(USERS_KEY, users.map((item) => item.id === token ? updated : item));
+    const user = publicUser(updated);
+    await AsyncStorage.setItem(SESSION_USER_KEY, JSON.stringify(user));
+    return { user };
+  },
 };
 
 export const cartApi = {
   get: async (token) => {
     if (isLocalToken(token)) return { cart: await readJson(localKey('cart', token), []) };
-    try { return await request('/cart', {}, token); } catch (error) {
-      if (error.status) throw error;
-      return { cart: await readJson(localKey('cart', token), []) };
-    }
+    return request('/cart', {}, token);
   },
   add: async (product, token) => {
-    if (!isLocalToken(token)) {
-      try { return await request('/cart', { method: 'POST', body: JSON.stringify({ product }) }, token); } catch (error) {
-        if (error.status) throw error;
-      }
-    }
+    if (!isLocalToken(token)) return request('/cart', { method: 'POST', body: JSON.stringify({ product }) }, token);
     const cart = [...await readJson(localKey('cart', token), []), product];
     await writeJson(localKey('cart', token), cart);
     return { cart };
   },
   remove: async (productId, token) => {
-    if (!isLocalToken(token)) {
-      try { return await request(`/cart/${encodeURIComponent(productId)}`, { method: 'DELETE' }, token); } catch (error) {
-        if (error.status) throw error;
-      }
-    }
+    if (!isLocalToken(token)) return request(`/cart/${encodeURIComponent(productId)}`, { method: 'DELETE' }, token);
     const cart = await readJson(localKey('cart', token), []);
     const index = cart.findIndex((item) => item.id === productId);
     if (index >= 0) cart.splice(index, 1);
@@ -146,16 +181,7 @@ export const cartApi = {
   },
   updateQuantity: async (productId, quantity, token) => {
     if (!Number.isInteger(quantity) || quantity < 0 || quantity > 99) throw new Error('La cantidad debe estar entre 0 y 99');
-    if (!isLocalToken(token)) {
-      try {
-        return await request(`/cart/${encodeURIComponent(productId)}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ quantity }),
-        }, token);
-      } catch (error) {
-        if (error.status) throw error;
-      }
-    }
+    if (!isLocalToken(token)) return request(`/cart/${encodeURIComponent(productId)}`, { method: 'PATCH', body: JSON.stringify({ quantity }) }, token);
     const cart = await readJson(localKey('cart', token), []);
     const existingQuantity = cart.filter((item) => item.id === productId).length;
     const product = cart.find((item) => item.id === productId);
@@ -250,6 +276,11 @@ export const ordersApi = {
       paymentMethod,
       ...(last4 ? { last4 } : {}),
       status: 'processing',
+      statusHistory: [{
+        status: 'processing',
+        message: 'Tu pedido está en proceso. Estamos preparando tus productos.',
+        createdAt: new Date().toISOString(),
+      }],
       createdAt: new Date().toISOString(),
     };
     await writeJson(localKey('orders', token), [order, ...orders]);
@@ -366,7 +397,20 @@ export const adminOrdersApi = {
       const orders = await readJson(key, []);
       const orderIndex = orders.findIndex((order) => order.id === orderId);
       if (orderIndex >= 0) {
-        orders[orderIndex] = { ...orders[orderIndex], status, updatedAt: new Date().toISOString() };
+        const messages = {
+          processing: 'Tu pedido está en proceso. Estamos preparando tus productos.',
+          shipped: '¡Tu pedido fue enviado! Ya está en camino a tu dirección.',
+          delivered: '¡Tu pedido fue entregado! Esperamos que disfrutes tu compra.',
+          cancelled: 'Tu pedido fue cancelado. Si necesitas ayuda, contacta a soporte.',
+        };
+        const now = new Date().toISOString();
+        const statusHistory = orders[orderIndex].statusHistory || [];
+        orders[orderIndex] = {
+          ...orders[orderIndex],
+          status,
+          updatedAt: now,
+          ...(orders[orderIndex].status !== status ? { statusHistory: [...statusHistory, { status, message: messages[status], createdAt: now }] } : {}),
+        };
         await writeJson(key, orders);
         return { order: orders[orderIndex] };
       }
@@ -404,14 +448,15 @@ export const productsApi = {
       const result = await request('/products');
       return { products: result.map(completeProduct) };
     } catch {
-      return { products: (await localAdminProducts()).map(completeProduct) };
+      return { products: (await localAdminProducts()).map(completeProduct), offline: true };
     }
   },
 };
 
 export const adminApi = {
   dashboard: async (token) => {
-    try { return await request('/admin/dashboard', {}, token); } catch {
+    try { return await request('/admin/dashboard', {}, token); } catch (error) {
+      if (error.status && !isLocalToken(token)) throw error;
       const users = (await readJson(USERS_KEY, [])).filter((user) => user.role !== 'admin');
       const products = await localAdminProducts();
       const orders = (await Promise.all(users.map((user) => readJson(localKey('orders', user.id), [])))).flat();
@@ -420,12 +465,14 @@ export const adminApi = {
     }
   },
   users: async (token) => {
-    try { return await request('/admin/users', {}, token); } catch {
+    try { return await request('/admin/users', {}, token); } catch (error) {
+      if (error.status && !isLocalToken(token)) throw error;
       return { users: (await readJson(USERS_KEY, [])).filter((user) => user.role !== 'admin').map(publicUser) };
     }
   },
   updateUser: async (id, payload, token) => {
-    try { return await request(`/admin/users/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }, token); } catch {
+    try { return await request(`/admin/users/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }, token); } catch (error) {
+      if (error.status && !isLocalToken(token)) throw error;
       const users = await readJson(USERS_KEY, []);
       const updated = users.map((user) => user.id === id ? { ...user, name: payload.name.trim(), email: payload.email.trim().toLowerCase() } : user);
       await writeJson(USERS_KEY, updated);
@@ -433,20 +480,25 @@ export const adminApi = {
     }
   },
   deleteUser: async (id, token) => {
-    try { return await request(`/admin/users/${id}`, { method: 'DELETE' }, token); } catch {
+    try { return await request(`/admin/users/${id}`, { method: 'DELETE' }, token); } catch (error) {
+      if (error.status && !isLocalToken(token)) throw error;
       await writeJson(USERS_KEY, (await readJson(USERS_KEY, [])).filter((user) => user.id !== id));
       return { message: 'Usuario eliminado' };
     }
   },
   products: async (token) => {
-    try { return await request('/admin/products', {}, token); } catch { return { products: await localAdminProducts() }; }
+    try { return await request('/admin/products', {}, token); } catch (error) {
+      if (error.status && !isLocalToken(token)) throw error;
+      return { products: await localAdminProducts() };
+    }
   },
   createProduct: async (payload, token) => {
     const completed = completeProduct(payload);
     try {
       const result = await request('/admin/products', { method: 'POST', body: JSON.stringify(completed) }, token);
       return { ...result, product: completeProduct(result.product) };
-    } catch {
+    } catch (error) {
+      if (error.status && !isLocalToken(token)) throw error;
       const product = completeProduct({ ...completed, id: `local-product-${Date.now()}` });
       const products = [product, ...(await localAdminProducts())];
       await writeJson(ADMIN_PRODUCTS_KEY, products);
@@ -455,14 +507,16 @@ export const adminApi = {
   },
   updateProduct: async (id, payload, token) => {
     const completed = completeProduct(payload);
-    try { return await request(`/admin/products/${id}`, { method: 'PATCH', body: JSON.stringify(completed) }, token); } catch {
+    try { return await request(`/admin/products/${id}`, { method: 'PATCH', body: JSON.stringify(completed) }, token); } catch (error) {
+      if (error.status && !isLocalToken(token)) throw error;
       const products = (await localAdminProducts()).map((product) => product.id === id ? completeProduct({ ...product, ...completed }) : product);
       await writeJson(ADMIN_PRODUCTS_KEY, products);
       return { product: products.find((product) => product.id === id), products };
     }
   },
   deleteProduct: async (id, token) => {
-    try { return await request(`/admin/products/${id}`, { method: 'DELETE' }, token); } catch {
+    try { return await request(`/admin/products/${id}`, { method: 'DELETE' }, token); } catch (error) {
+      if (error.status && !isLocalToken(token)) throw error;
       await writeJson(ADMIN_PRODUCTS_KEY, (await localAdminProducts()).filter((product) => product.id !== id));
       return { message: 'Producto eliminado' };
     }

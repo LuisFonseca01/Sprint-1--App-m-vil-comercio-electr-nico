@@ -1,10 +1,10 @@
-Este es el primer Sprint backlog del proyecto para la elaboración de una app movil de comercio electrónico para la asignatura de Proyecto II, en el se siguen los parametros y requerimientos de la metodología ágil SCRUM. 
+Este es el la segunda fase de desarrollo, revisión y ajuste de los Sprints y el backlog del proyecto para la elaboración de una app movil de comercio electrónico para la asignatura de Proyecto II, en el se siguen los parámetros y requerimientos de la metodología ágil SCRUM. 
 
 # Gamecube
 
-Gamecube es una app de comercio electrónico sobre productos gaming. Puedes ver productos, buscarlos, registrarte, iniciar sesión, añadir productos al carrito y comprar.
+Gamecube es una app de comercio electrónico sobre productos gaming. 
 
-La aplicación está hecha con Expo y React Native. Los usuarios, productos y carritos se guardan en MongoDB Atlas; los pedidos de demostración se guardan localmente en el dispositivo.
+La aplicación está hecha con Expo y React Native. Los usuarios, productos, carritos, pedidos y mensajes de seguimiento de las sesiones conectadas se guardan en MongoDB Atlas. Los pedidos de las sesiones locales de demostración se guardan en el dispositivo.
 
 
 ## Qué necesitas
@@ -84,9 +84,12 @@ Esto carga los productos de `src/data/products.js` en la colección `products`.
 
 ## 5. Ejecuta el proyecto
 
-Los métodos de pago son una simulación local: puedes probar tarjeta con `4242 4242 4242 4242`, vencimiento futuro y CVC `123`, o elegir PayPal, transferencia o efectivo. No se hacen cargos ni se envían datos de pago a servicios externos. Los pedidos de usuarios conectados se guardan en MongoDB para que el administrador pueda cambiar el estado; los pedidos en modo sin conexión se guardan en el dispositivo.
+Los métodos de pago son una simulación: puedes probar con la targeta  `4242 4242 4242 4242`, vencimiento con fecha futura y CVC `123`, o elegir PayPal, transferencia o efectivo. No se hacen cargos ni se envían datos de pago a servicios externos. Los pedidos de usuarios conectados se guardan en MongoDB para que laadministración pueda cambiar su estado. Cada cambio se conserva como un mensaje de seguimiento que aparece en el historial del clienten.
 
-Desde el perfil puedes consultar el historial, filtrar pedidos por fecha o estado y desplegar sus productos y dirección. El chat de soporte actualiza mensajes automáticamente; en modo sin conexión responde con un mensaje de demostración.
+Desde el perfil puedes consultar el historial, filtrar pedidos por fecha o estado, revisar las notificaciones y el detalle de cada orden, editar tus datos y foto, cambiar tu contraseña y abrir las preguntas frecuentes.
+
+El chat de soporte actualiza mensajes automáticamente. Los errores de conexión, validación y guardado se muestran en mensajes con acciones claras.
+
 
 Primero abre una terminal y arranca el backend:
 
@@ -142,10 +145,11 @@ npm.cmd run ios
 
 ## Importante
 
-En MongoDB Atlas encontrarás estas colecciones donde se pueden ver los usuarios registrados, los productos y las ordenes(aun no programadas en este Sprint):
+En MongoDB Atlas encontrarás estas colecciones donde se pueden ver los usuarios registrados, los productos y las ordenes:
 
 ```text
 products   productos de la tienda
 users      usuarios registrados
-orders     compras realizadas
+orders     compras, estado actual y mensajes de seguimiento
+supportmessages   conversaciones de soporte
 ```

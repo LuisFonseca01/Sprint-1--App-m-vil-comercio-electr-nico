@@ -18,20 +18,20 @@ export default function SupportChatScreen({ navigation, token, user }) {
   const scrollRef = useRef(null);
   const isFocused = useIsFocused();
 
-  const loadMessages = useCallback(async (quiet = false) => {
+  const loadMessages = useCallback(async () => {
     try {
       const result = await supportApi.getMessages(token);
       setMessages(result.messages || []);
       setErrorMessage('');
     } catch (error) {
-      if (!quiet) setErrorMessage(error.message || 'No se pudieron cargar los mensajes.');
+      setErrorMessage(error.message || 'No se pudieron cargar los mensajes.');
     }
   }, [token]);
 
   useEffect(() => {
     if (!isFocused) return undefined;
     loadMessages();
-    const interval = setInterval(() => loadMessages(true), 3000);
+    const interval = setInterval(loadMessages, 3000);
     return () => clearInterval(interval);
   }, [loadMessages, isFocused]);
 
@@ -77,7 +77,7 @@ export default function SupportChatScreen({ navigation, token, user }) {
           </View>;
         })}
       </ScrollView>
-      {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
+      {errorMessage ? <View style={styles.errorCard}><Icon name="information-outline" size={17} color={colors.danger} /><Text style={styles.error}>{errorMessage}</Text></View> : null}
       <View style={styles.composer}>
         <TextInput value={draft} onChangeText={setDraft} onSubmitEditing={send} placeholder="Escribe un mensaje..." placeholderTextColor={colors.muted} style={styles.input} multiline maxLength={1000} />
         <Pressable onPress={send} disabled={!draft.trim() || sending} style={[styles.send, (!draft.trim() || sending) && styles.sendDisabled]} accessibilityLabel="Enviar mensaje">
@@ -116,7 +116,8 @@ const styles = StyleSheet.create({
   sender: { color: colors.purpleBright, fontSize: 9, fontWeight: '900', marginBottom: 4 },
   messageText: { color: colors.white, fontSize: 12, lineHeight: 18 },
   time: { color: '#C1B8D0', fontSize: 8, alignSelf: 'flex-end', marginTop: 5 },
-  error: { color: colors.danger, fontSize: 11, paddingHorizontal: 14, paddingBottom: 7 },
+  errorCard: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#321A25', borderWidth: 1, borderColor: '#693440', borderRadius: 10, padding: 9, marginHorizontal: 12, marginBottom: 6 },
+  error: { color: colors.danger, fontSize: 11, flex: 1 },
   composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, borderTopWidth: 1, borderTopColor: colors.line, padding: 12 },
   input: { flex: 1, maxHeight: 100, minHeight: 43, borderRadius: 14, backgroundColor: colors.surface, color: colors.white, paddingHorizontal: 13, paddingTop: 12, paddingBottom: 10, fontSize: 12 },
   send: { width: 43, height: 43, borderRadius: 22, backgroundColor: colors.lime, alignItems: 'center', justifyContent: 'center' },

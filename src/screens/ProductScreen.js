@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from '../components/Icon';
+import ProductShareButton from '../components/ProductShareButton';
 import { colors, formatPrice } from '../theme';
 
 export default function ProductScreen({ route, navigation, onAdd, onBuyNow }) {
   const { product } = route.params;
   const [activeImage, setActiveImage] = useState(0);
   return <SafeAreaView style={styles.safeArea}><ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-    <View style={styles.header}><Pressable style={styles.back} onPress={() => navigation.goBack()}><Icon name="arrow-left" size={21} /></Pressable><Text style={styles.headerTitle}>Producto</Text><Icon name="share-variant-outline" size={21} color={colors.muted} /></View>
+    <View style={styles.header}><Pressable style={styles.back} onPress={() => navigation.goBack()}><Icon name="arrow-left" size={21} /></Pressable><Text style={styles.headerTitle}>Producto</Text><ProductShareButton product={product} /></View>
     <Image source={{ uri: product.gallery[activeImage] }} style={styles.mainImage} resizeMode="cover" /><View style={styles.gallery}>{product.gallery.map((image, index) => <Pressable key={image} onPress={() => setActiveImage(index)} style={[styles.thumb, index === activeImage && styles.activeThumb]}><Image source={{ uri: image }} style={styles.thumbImage} resizeMode="cover" /></Pressable>)}</View>
     <Text style={styles.category}>{product.categoryLabel.toUpperCase()}</Text><Text style={styles.title}>{product.name}</Text><View style={styles.rating}><Icon name="star" size={16} color={colors.lime} /><Text style={styles.ratingText}>{product.rating} · 38 opiniones</Text><Text style={styles.stock}>EN STOCK</Text></View><View style={styles.priceRow}><Text style={styles.price}>{formatPrice(product.price)}</Text>{product.oldPrice && <Text style={styles.oldPrice}>{formatPrice(product.oldPrice)}</Text>}</View><Text style={styles.installments}>6 cuotas sin interés con tarjetas seleccionadas</Text>
     <View style={styles.divider} /><Text style={styles.sectionTitle}>Descripción</Text><Text style={styles.description}>{product.description}</Text><View style={styles.specs}>{product.specs.map((spec) => <View style={styles.spec} key={spec}><Icon name="check-circle-outline" size={17} color={colors.purpleBright} /><Text style={styles.specText}>{spec}</Text></View>)}</View><View style={styles.delivery}><Icon name="truck-fast-outline" size={24} color={colors.lime} /><View><Text style={styles.deliveryTitle}>Envío gratis</Text><Text style={styles.deliveryText}>Recíbelo mañana en tu domicilio</Text></View></View>

@@ -61,7 +61,12 @@ export default function OrderHistoryScreen({ navigation, token }) {
   }, [load, isFocused]);
 
   const invalidDateFilter = useMemo(() => {
-    const validDate = (value) => !value || /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T00:00:00`).getTime());
+    const validDate = (value) => {
+      if (!value) return true;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+      const parsed = new Date(`${value}T00:00:00`);
+      return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+    };
     return !validDate(fromDate) || !validDate(toDate) || Boolean(fromDate && toDate && fromDate > toDate);
   }, [fromDate, toDate]);
 
@@ -115,6 +120,8 @@ export default function OrderHistoryScreen({ navigation, token }) {
         const date = new Date(order.createdAt || order.date || Date.now());
         const items = groupOrderItems(order.items);
         const itemCount = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+        const statusHistory = order.statusHistory || [];
+        const latestUpdate = statusHistory[statusHistory.length - 1];
         return <View key={orderId} style={styles.orderCard}>
           <Pressable style={styles.orderHeader} onPress={() => setExpandedId(expanded ? null : orderId)}>
             <View style={styles.orderMain}>
@@ -129,7 +136,27 @@ export default function OrderHistoryScreen({ navigation, token }) {
             </View>
             <Icon name={expanded ? 'expand-less' : 'expand-more'} size={21} color={colors.muted} />
           </Pressable>
+          {latestUpdate && <View style={styles.notification}>
+            <View style={styles.notificationIcon}><Icon name="bell-ring-outline" size={17} color={colors.background} /></View>
+            <View style={styles.notificationCopy}>
+              <Text style={styles.notificationTitle}>Actualización · {statusLabel(latestUpdate.status)}</Text>
+              <Text style={styles.notificationMessage}>{latestUpdate.message}</Text>
+              <Text style={styles.notificationDate}>{new Date(latestUpdate.createdAt || order.updatedAt || order.createdAt).toLocaleString('es-MX')}</Text>
+            </View>
+          </View>}
           {expanded && <View style={styles.details}>
+            {statusHistory.length > 0 && <>
+              <Text style={styles.detailHeading}>SEGUIMIENTO DEL PEDIDO</Text>
+              {statusHistory.slice().reverse().map((update, index) => <View style={styles.timelineRow} key={`${update.status}-${update.createdAt || index}`}>
+                <View style={styles.timelineDot} />
+                <View style={styles.timelineCopy}>
+                  <Text style={styles.timelineTitle}>{statusLabel(update.status)}</Text>
+                  <Text style={styles.timelineMessage}>{update.message}</Text>
+                  <Text style={styles.notificationDate}>{new Date(update.createdAt || order.createdAt).toLocaleString('es-MX')}</Text>
+                </View>
+              </View>)}
+              <View style={styles.detailRule} />
+            </>}
             <Text style={styles.detailHeading}>PRODUCTOS</Text>
             {items.map((item, index) => {
               const quantity = item.quantity || 1;
@@ -197,4 +224,15 @@ const styles = StyleSheet.create({
   detailValue: { color: colors.white, fontSize: 11, fontWeight: '800' },
   address: { color: colors.white, fontSize: 11, lineHeight: 17 },
   payment: { color: colors.muted, fontSize: 10, marginTop: 10 },
+  notification: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, backgroundColor: '#202911', borderTopWidth: 1, borderTopColor: '#354516', padding: 12 },
+  notificationIcon: { width: 30, height: 30, borderRadius: 10, backgroundColor: colors.lime, alignItems: 'center', justifyContent: 'center' },
+  notificationCopy: { flex: 1 },
+  notificationTitle: { color: colors.lime, fontSize: 10, fontWeight: '900' },
+  notificationMessage: { color: colors.white, fontSize: 11, lineHeight: 16, marginTop: 4 },
+  notificationDate: { color: colors.muted, fontSize: 9, marginTop: 4 },
+  timelineRow: { flexDirection: 'row', gap: 9, marginTop: 4, marginBottom: 10 },
+  timelineDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: colors.lime, marginTop: 4 },
+  timelineCopy: { flex: 1 },
+  timelineTitle: { color: colors.white, fontSize: 11, fontWeight: '900' },
+  timelineMessage: { color: colors.muted, fontSize: 10, lineHeight: 15, marginTop: 3 },
 });

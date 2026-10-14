@@ -112,7 +112,7 @@ export default function CheckoutScreen({ navigation, cart, onUpdateQuantity, onP
       setShippingAddress({ street: '', city: '', postalCode: '', reference: '' });
       setOrder(completedOrder);
     } catch (error) {
-      setErrorMessage(error.message || 'No se pudo guardar la compra simulada. Inténtalo de nuevo.');
+      setErrorMessage(error.message || 'No se pudo guardar la compra. Inténtalo de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -125,7 +125,7 @@ export default function CheckoutScreen({ navigation, cart, onUpdateQuantity, onP
         <View style={styles.successIcon}><Icon name="check" size={45} color={colors.background} /></View>
         <Text style={styles.kicker}>PAGO SIMULADO</Text>
         <Text style={styles.title}>¡Pedido confirmado!</Text>
-        <Text style={styles.copy}>Esta compra es una demostración local: no se realizó ningún cargo ni se enviaron datos a Stripe, PayPal o un banco.</Text>
+        <Text style={styles.copy}>El pago es una simulación: no hubo cargos reales ni se enviaron datos a servicios externos. Tu pedido quedó registrado y puedes consultar aquí sus actualizaciones.</Text>
         <View style={styles.orderCard}>
           <Text style={styles.orderLabel}>NÚMERO DE PEDIDO</Text>
           <Text style={styles.orderValue}>{order.orderId}</Text>
@@ -135,10 +135,14 @@ export default function CheckoutScreen({ navigation, cart, onUpdateQuantity, onP
           <View style={styles.separator} />
           <Text style={styles.orderLabel}>TOTAL SIMULADO</Text>
           <Text style={styles.orderTotal}>{formatPrice(order.total)}</Text>
+          <View style={styles.separator} />
+          <Text style={styles.orderLabel}>ESTADO DEL PEDIDO</Text>
+          <Text style={styles.orderValue}>En proceso · preparando tu compra</Text>
         </View>
-        <Pressable style={styles.primary} onPress={() => navigation.navigate('Main', { screen: 'home' })}>
-          <Text style={styles.primaryText}>Volver a la tienda</Text>
+        <Pressable style={styles.primary} onPress={() => navigation.navigate('OrderHistory')}>
+          <Text style={styles.primaryText}>Ver mis pedidos</Text>
         </Pressable>
+        <Pressable style={styles.secondary} onPress={() => navigation.navigate('Main', { screen: 'home' })}><Text style={styles.secondaryText}>Volver a la tienda</Text></Pressable>
       </View>
     </SafeAreaView>;
   }
@@ -240,7 +244,10 @@ export default function CheckoutScreen({ navigation, cart, onUpdateQuantity, onP
           <Text style={styles.cardHint}>{paymentMethod === 'transfer' ? 'Se registrará una transferencia bancaria de demostración, sin datos de cuenta ni movimiento real.' : 'Se registrará un pago en efectivo de demostración; no se generará una ficha de pago real.'}</Text>
         </View>}
 
-        {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
+        {errorMessage ? <View style={styles.errorCard}>
+          <Icon name="information-outline" size={20} color={colors.danger} />
+          <Text style={styles.error}>{errorMessage}</Text>
+        </View> : null}
         <Pressable style={[styles.primary, loading && styles.primaryDisabled]} onPress={pay} disabled={loading}>
           <Text style={styles.primaryText}>{loading ? 'Guardando simulación...' : `Simular pago de ${formatPrice(total)}`}</Text>
           {!loading && <Icon name="check-circle-outline" size={18} color={colors.background} />}
@@ -293,7 +300,8 @@ const styles = StyleSheet.create({
   postalInput: { width: 105 },
   cardHint: { color: colors.muted, fontSize: 11, lineHeight: 17, marginTop: 10 },
   infoCard: { backgroundColor: colors.card, borderRadius: 13, padding: 14, marginTop: 14 },
-  error: { color: colors.danger, fontSize: 12, lineHeight: 18, marginTop: 12 },
+  errorCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 9, backgroundColor: '#321A25', borderWidth: 1, borderColor: '#693440', borderRadius: 12, padding: 12, marginTop: 14 },
+  error: { color: colors.danger, fontSize: 12, lineHeight: 18, flex: 1 },
   primary: { minHeight: 50, paddingHorizontal: 18, borderRadius: 14, backgroundColor: colors.lime, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 9, marginTop: 20 },
   primaryDisabled: { opacity: 0.55 },
   primaryText: { color: colors.background, fontSize: 13, fontWeight: '900' },

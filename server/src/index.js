@@ -30,6 +30,9 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['customer', 'admin'], default: 'customer' },
+  phone: { type: String, default: '' },
+  address: { type: String, default: '' },
+  photo: { type: String, default: '' },
   cart: { type: [cartItemSchema], default: [] },
   favorites: { type: [cartItemSchema], default: [] },
 }, { timestamps: true });
@@ -68,6 +71,11 @@ const orderSchema = new mongoose.Schema({
     reference: String,
   },
   status: { type: String, enum: ['processing', 'shipped', 'delivered', 'cancelled'], default: 'processing' },
+  statusHistory: [{
+    status: { type: String, enum: ['processing', 'shipped', 'delivered', 'cancelled'], required: true },
+    message: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now },
+  }],
 }, { timestamps: true });
 const Order = mongoose.model('Order', orderSchema);
 const supportMessageSchema = new mongoose.Schema({
@@ -80,7 +88,27 @@ const supportMessageSchema = new mongoose.Schema({
 const SupportMessage = mongoose.model('SupportMessage', supportMessageSchema);
 
 function createToken(user) { return jwt.sign({ id: user.id }, jwtSecret, { expiresIn: '7d' }); }
-function publicUser(user) { return { id: user.id, name: user.name, email: user.email, role: user.role || 'customer', createdAt: user.createdAt }; }
+function publicUser(user) {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role || 'customer',
+    phone: user.phone || '',
+    address: user.address || '',
+    photo: user.photo || '',
+    createdAt: user.createdAt,
+  };
+}
+function orderStatusMessage(status) {
+  const messages = {
+    processing: 'Tu pedido está en proceso. Estamos preparando tus productos.',
+    shipped: '¡Tu pedido fue enviado! Ya está en camino a tu dirección.',
+    delivered: '¡Tu pedido fue entregado! Esperamos que disfrutes tu compra.',
+    cancelled: 'Tu pedido fue cancelado. Si necesitas ayuda, contacta a soporte.',
+  };
+  return messages[status];
+}
 function auth(req, res, next) {
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'Necesitas iniciar sesión' });
@@ -104,6 +132,7 @@ app.post('/api/auth/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
     if (!name?.trim() || !email?.trim() || !password || password.length < 6) return res.status(400).json({ message: 'Nombre, email y una contraseña de 6 caracteres son obligatorios' });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return res.status(400).json({ message: 'Escribe un correo electrónico válido.' });
     const normalizedEmail = email.trim().toLowerCase();
     if (await User.exists({ email: normalizedEmail })) return res.status(409).json({ message: 'Ya existe una cuenta con ese email' });
     const user = await User.create({ name: name.trim(), email: normalizedEmail, password: await bcrypt.hash(password, 12) });
@@ -136,6 +165,37 @@ app.get('/api/auth/me', auth, async (req, res) => {
   const user = await User.findById(req.userId);
   if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
   res.json({ user: publicUser(user) });
+});
+
+app.patch('/api/auth/profile', auth, async (req, res) => {
+  const { name, phone = '', address = '', photo = '', currentPassword, newPassword } = req.body;
+  if (typeof name !== 'string' || !name.trim()) return res.status(400).json({ message: 'Escribe tu nombre antes de guardar los cambios.' });
+  if (typeof phone !== 'string' || phone.length > 25 || (phone && !/^[+\d\s()-]{7,20}$/.test(phone.trim()))) {
+    return res.status(400).json({ message: 'Escribe un teléfono válido de hasta 20 caracteres.' });
+  }
+  if (typeof address !== 'string' || address.length > 300) return res.status(400).json({ message: 'La dirección no puede superar 300 caracteres.' });
+  if (typeof photo !== 'string' || photo.length > 1500000 || (photo && !/^data:image\/(jpeg|png|webp);base64,/.test(photo))) {
+    return res.status(400).json({ message: 'La foto no es válida o supera el tamaño permitido. Elige otra imagen.' });
+  }
+  if (newPassword !== undefined && (typeof newPassword !== 'string' || newPassword.length < 8 || !currentPassword)) {
+    return res.status(400).json({ message: 'Para cambiar la contraseña, escribe la actual y una nueva de al menos 8 caracteres.' });
+  }
+  const user = await User.findById(req.userId);
+  if (!user) return res.status(404).json({ message: 'No se encontró tu cuenta.' });
+  if (newPassword) {
+    let validPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!validPassword && user.password === currentPassword) {
+      validPassword = true;
+    }
+    if (!validPassword) return res.status(400).json({ message: 'La contraseña actual no coincide.' });
+    user.password = await bcrypt.hash(newPassword, 12);
+  }
+  user.name = name.trim();
+  user.phone = phone.trim();
+  user.address = address.trim();
+  user.photo = photo;
+  await user.save();
+  res.json({ user: publicUser(user), message: 'Perfil actualizado correctamente.' });
 });
 
 app.get('/api/cart', auth, async (req, res) => {
@@ -265,6 +325,10 @@ app.post('/api/orders/simulated', auth, async (req, res) => {
       reference: shippingAddress.reference?.trim() || '',
     },
     status: 'processing',
+    statusHistory: [{
+      status: 'processing',
+      message: 'Tu pedido está en proceso. Estamos preparando tus productos.',
+    }],
   });
   user.cart = [];
   await user.save();
@@ -297,9 +361,18 @@ app.patch('/api/admin/orders/:id/status', auth, adminOnly, async (req, res) => {
     return res.status(400).json({ message: 'Selecciona un estado de pedido válido' });
   }
   if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ message: 'El identificador del pedido no es válido' });
-  const order = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true })
-    .populate('user', 'name email');
-  if (!order) return res.status(404).json({ message: 'Pedido no encontrado' });
+  const existing = await Order.findById(req.params.id);
+  if (!existing) return res.status(404).json({ message: 'Pedido no encontrado' });
+  let order = existing;
+  if (existing.status !== status) {
+    order = await Order.findOneAndUpdate(
+      { _id: existing.id, status: existing.status },
+      { $set: { status }, $push: { statusHistory: { status, message: orderStatusMessage(status), createdAt: new Date() } } },
+      { new: true },
+    );
+    if (!order) return res.status(409).json({ message: 'El pedido cambió al mismo tiempo. Actualiza la lista e inténtalo de nuevo.' });
+  }
+  await order.populate('user', 'name email');
   res.json({ order });
 });
 
@@ -374,7 +447,7 @@ app.get('/api/admin/dashboard', auth, adminOnly, async (req, res) => {
   res.json({ metrics: { sales, users, products, orders: await Order.countDocuments() }, salesTrend: [24, 38, 32, 54, 48, 71, 63], userTrend: [18, 26, 24, 39, 44, 52, 61], topProducts: topProducts.map((product) => ({ ...product, sold: productSales[product.id] })).sort((a, b) => b.sold - a.sold).slice(0, 5) });
 });
 
-app.get('/api/admin/users', auth, adminOnly, async (req, res) => res.json({ users: await User.find({ role: 'customer' }).select('-password').sort({ createdAt: -1 }).lean() }));
+app.get('/api/admin/users', auth, adminOnly, async (req, res) => res.json({ users: await User.find({ role: 'customer' }).select('-password -photo').sort({ createdAt: -1 }).lean() }));
 app.patch('/api/admin/users/:id', auth, adminOnly, async (req, res) => {
   const { name, email } = req.body;
   if (!name?.trim() || !email?.trim()) return res.status(400).json({ message: 'Nombre y email son obligatorios' });

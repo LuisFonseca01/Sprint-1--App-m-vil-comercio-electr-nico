@@ -5,11 +5,11 @@ import Icon from '../components/Icon';
 import ProductCard from '../components/ProductCard';
 import CategoryPills from '../components/CategoryPills';
 import BottomNav from '../components/BottomNav';
-import { latest, offers, products as seedProducts } from '../data/products';
+import { offers, products as seedProducts } from '../data/products';
 import { colors, shadow } from '../theme';
 
-function Section({ title, action, children }) {
-  return <View style={styles.section}><View style={styles.sectionHead}><Text style={styles.sectionTitle}>{title}</Text>{action && <Pressable style={styles.action}><Text style={styles.actionText}>{action}</Text><Icon name="arrow-right" size={14} color={colors.purpleBright} /></Pressable>}</View>{children}</View>;
+function Section({ title, action, icon, children }) {
+  return <View style={styles.section}><View style={styles.sectionHead}><View style={styles.sectionHeading}>{icon && <View style={styles.sectionIcon}><Icon name={icon} size={18} color={colors.background} /></View>}<Text style={styles.sectionTitle}>{title}</Text></View>{action && <Pressable style={styles.action}><Text style={styles.actionText}>{action}</Text><Icon name="arrow-right" size={14} color={colors.purpleBright} /></Pressable>}</View>{children}</View>;
 }
 
 function HorizontalProducts({ data, navigation, favorites, onToggleFavorite }) {
@@ -19,6 +19,7 @@ function HorizontalProducts({ data, navigation, favorites, onToggleFavorite }) {
 export default function HomeScreen({ navigation, cartCount, favorites = [], products = seedProducts, onToggleFavorite, user }) {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [search, setSearch] = useState('');
+  const newProducts = products.slice(-8);
   const normalizedSearch = search.trim().toLowerCase();
   const filtered = products.filter((product) => (selectedCategory === 'all' || product.category === selectedCategory) && product.name.toLowerCase().includes(normalizedSearch));
   return (
@@ -37,7 +38,7 @@ export default function HomeScreen({ navigation, cartCount, favorites = [], prod
         ListHeaderComponent={<View>
           <View style={styles.hero}><Image source={{ uri: 'https://images.unsplash.com/photo-1547394765-185e1e68f34e?auto=format&fit=crop&w=1200&q=85' }} style={styles.heroImage} resizeMode="cover" /><View style={styles.heroOverlay} /><View style={styles.heroCopy}><Text style={styles.heroKicker}>LA NUEVA ERA GAMER</Text><Text style={styles.heroTitle}>Juega en otra{ '\n' }dimensión.</Text><Text style={styles.heroSubtitle}>Hardware sin límites para tu próxima partida.</Text><Pressable style={styles.heroButton} onPress={() => setSelectedCategory('gpu')}><Text style={styles.heroButtonText}>Ver novedades</Text><Icon name="arrow-right" size={16} color={colors.background} /></Pressable></View></View>
           <Section title="Categorías" action="Ver todas"><CategoryPills selected={selectedCategory} onSelect={setSelectedCategory} /></Section>
-          {!search && selectedCategory === 'all' && <><Section title="Ofertas de la semana" action="Ver ofertas"><View style={styles.offerBanner}><View><Text style={styles.offerKicker}>HASTA -30%</Text><Text style={styles.offerTitle}>Sube de nivel{ '\n' }por menos.</Text><Text style={styles.offerText}>En productos seleccionados</Text></View><Icon name="sale" size={60} color={colors.pink} /></View><HorizontalProducts data={offers} navigation={navigation} favorites={favorites} onToggleFavorite={onToggleFavorite} /></Section><Section title="Lo más nuevo" action="Recién llegados"><HorizontalProducts data={latest} navigation={navigation} favorites={favorites} onToggleFavorite={onToggleFavorite} /></Section></>}
+          {!search && selectedCategory === 'all' && <><Section title="Ofertas de la semana" action="Ver ofertas"><View style={styles.offerBanner}><View><Text style={styles.offerKicker}>HASTA -30%</Text><Text style={styles.offerTitle}>Sube de nivel{ '\n' }por menos.</Text><Text style={styles.offerText}>En productos seleccionados</Text></View><Icon name="sale" size={60} color={colors.pink} /></View><HorizontalProducts data={offers} navigation={navigation} favorites={favorites} onToggleFavorite={onToggleFavorite} /></Section><Section title="Productos nuevos" action={`${newProducts.length} productos`} icon="new-releases"><HorizontalProducts data={newProducts} navigation={navigation} favorites={favorites} onToggleFavorite={onToggleFavorite} /></Section></>}
           <Section title={normalizedSearch ? 'Resultados de búsqueda' : selectedCategory === 'all' ? 'Más para tu setup' : 'Productos de la categoría'} action={`${filtered.length} productos`} />
         </View>}
         renderItem={({ item }) => <ProductCard product={item} isFavorite={favorites.some((favorite) => favorite.id === item.id)} onToggleFavorite={() => onToggleFavorite(item)} onPress={() => navigation.navigate('Product', { product: item })} />}
@@ -74,6 +75,8 @@ const styles = StyleSheet.create({
   heroButtonText: { color: colors.background, fontSize: 11, fontWeight: '900' },
   section: { marginBottom: 7 },
   sectionHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 13 },
+  sectionHeading: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  sectionIcon: { width: 30, height: 30, borderRadius: 10, backgroundColor: colors.lime, alignItems: 'center', justifyContent: 'center' },
   sectionTitle: { color: colors.white, fontSize: 18, fontWeight: '900' },
   action: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   actionText: { color: colors.purpleBright, fontSize: 11, fontWeight: '800' },
