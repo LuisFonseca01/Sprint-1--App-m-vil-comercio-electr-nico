@@ -84,6 +84,8 @@ Esto carga los productos de `src/data/products.js` en la colección `products`.
 
 ## 5. Ejecuta el proyecto
 
+La campana de la pantalla principal abre una bandeja local con avisos de compras, cambios de pedido, favoritos, productos añadidos al carrito y respuestas de soporte. Los cambios de pedidos y respuestas se consultan mientras la app está abierta; son avisos dentro de la app, no notificaciones push del sistema.
+
 Los métodos de pago son una simulación: puedes probar con la targeta  `4242 4242 4242 4242`, vencimiento con fecha futura y CVC `123`, o elegir PayPal, transferencia o efectivo. No se hacen cargos ni se envían datos de pago a servicios externos. Los pedidos de usuarios conectados se guardan en MongoDB para que laadministración pueda cambiar su estado. Cada cambio se conserva como un mensaje de seguimiento que aparece en el historial del clienten.
 
 Desde el perfil puedes consultar el historial, filtrar pedidos por fecha o estado, revisar las notificaciones y el detalle de cada orden, editar tus datos y foto, cambiar tu contraseña y abrir las preguntas frecuentes.

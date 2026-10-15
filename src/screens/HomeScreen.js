@@ -5,6 +5,7 @@ import Icon from '../components/Icon';
 import ProductCard from '../components/ProductCard';
 import CategoryPills from '../components/CategoryPills';
 import BottomNav from '../components/BottomNav';
+import NotificationBell from '../components/NotificationBell';
 import { offers, products as seedProducts } from '../data/products';
 import { colors, shadow } from '../theme';
 
@@ -16,7 +17,7 @@ function HorizontalProducts({ data, navigation, favorites, onToggleFavorite }) {
   return <FlatList horizontal data={data} keyExtractor={(item) => item.id} showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalProducts} renderItem={({ item }) => <ProductCard product={item} compact isFavorite={favorites.some((favorite) => favorite.id === item.id)} onToggleFavorite={() => onToggleFavorite(item)} onPress={() => navigation.navigate('Product', { product: item })} />} />;
 }
 
-export default function HomeScreen({ navigation, cartCount, favorites = [], products = seedProducts, onToggleFavorite, user }) {
+export default function HomeScreen({ navigation, cartCount, favorites = [], products = seedProducts, onToggleFavorite, user, notifications = [], onNotificationsOpen }) {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [search, setSearch] = useState('');
   const newProducts = products.slice(-8);
@@ -25,7 +26,7 @@ export default function HomeScreen({ navigation, cartCount, favorites = [], prod
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.fixedHeader}>
-        <View style={styles.topBar}><View><Text style={styles.eyebrow}>BIENVENIDO A</Text><Text style={styles.brand}>game<Text style={styles.brandAccent}>cube</Text></Text></View><View style={styles.headerActions}>{user?.role === 'admin' && <Pressable style={styles.panelButton} onPress={() => navigation.navigate('AdminDashboard')} accessibilityLabel="Abrir panel administrador"><Icon name="dashboard" size={21} color={colors.lime} /></Pressable>}<Pressable style={styles.cartButton} onPress={() => navigation.navigate('Main', { screen: 'cart' })}><Icon name="cart-variant" size={24} />{cartCount > 0 && <View style={styles.cartBadge}><Text style={styles.badgeText}>{cartCount}</Text></View>}</Pressable></View></View>
+        <View style={styles.topBar}><View><Text style={styles.eyebrow}>BIENVENIDO A</Text><Text style={styles.brand}>game<Text style={styles.brandAccent}>cube</Text></Text></View><View style={styles.headerActions}>{user?.role === 'admin' && <Pressable style={styles.panelButton} onPress={() => navigation.navigate('AdminDashboard')} accessibilityLabel="Abrir panel administrador"><Icon name="dashboard" size={21} color={colors.lime} /></Pressable>}<NotificationBell notifications={notifications} onOpen={onNotificationsOpen} /><Pressable style={styles.cartButton} onPress={() => navigation.navigate('Main', { screen: 'cart' })}><Icon name="cart-variant" size={24} />{cartCount > 0 && <View style={styles.cartBadge}><Text style={styles.badgeText}>{cartCount}</Text></View>}</Pressable></View></View>
         <View style={styles.search}><Icon name="magnify" size={23} color={colors.purpleBright} /><TextInput value={search} onChangeText={setSearch} placeholder="Busca tu próximo upgrade" placeholderTextColor={colors.muted} style={styles.searchInput} /><Pressable accessibilityLabel="Filtrar productos"><Icon name="tune-variant" size={21} color={colors.purpleBright} /></Pressable></View>
       </View>
       <FlatList
