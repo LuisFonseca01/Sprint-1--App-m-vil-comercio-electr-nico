@@ -5,7 +5,7 @@ import Icon from '../components/Icon';
 import ProductCard from '../components/ProductCard';
 import BottomNav from '../components/BottomNav';
 import { categories, products as seedProducts } from '../data/products';
-import { colors, shadow } from '../theme';
+import { colors, shadow, createAdaptiveStyles } from '../theme';
 
 export default function CategoriesScreen({ navigation, cartCount, favorites = [], products = seedProducts, onToggleFavorite }) {
   const [selected, setSelected] = useState('all');
@@ -24,7 +24,7 @@ export default function CategoriesScreen({ navigation, cartCount, favorites = []
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createAdaptiveStyles({
   safeArea: { flex: 1, backgroundColor: colors.background },
   content: { padding: 18, paddingBottom: 105 },
   kicker: { color: colors.purpleBright, fontSize: 10, fontWeight: '900', letterSpacing: 1.4, marginTop: 12 },
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
   categoryTile: { width: '48%', height: 121, borderRadius: 17, backgroundColor: colors.surface, padding: 16, justifyContent: 'space-between', borderWidth: 1, borderColor: colors.line, ...shadow },
   categoryTileActive: { backgroundColor: colors.lime, borderColor: colors.lime },
   tileText: { color: colors.white, fontSize: 14, fontWeight: '900' },
-  tileTextActive: { color: colors.background },
+  tileTextActive: { color: colors.ink },
   tileCount: { color: colors.muted, fontSize: 10, fontWeight: '700' },
   resultHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 15 },
   resultTitle: { color: colors.white, fontSize: 19, fontWeight: '900' },

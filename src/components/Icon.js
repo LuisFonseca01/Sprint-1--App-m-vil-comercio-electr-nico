@@ -32,6 +32,8 @@ const iconNames = {
   'arrow-right': 'arrow-forward',
   'arrow-right-circle': 'arrow-circle-right',
   'arrow-left': 'arrow-back',
+  'light-mode': 'light-mode',
+  'dark-mode': 'dark-mode',
   'share-variant-outline': 'share',
   'eye-outline': 'visibility',
   'eye-off-outline': 'visibility-off',

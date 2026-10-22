@@ -22,13 +22,15 @@ import AdminOrdersScreen from './src/screens/AdminOrdersScreen';
 import AdminSupportScreen from './src/screens/AdminSupportScreen';
 import FaqScreen from './src/screens/FaqScreen';
 import EditProfileScreen from './src/screens/EditProfileScreen';
-import { adminOrdersApi, authApi, cartApi, favoritesApi, ordersApi, productsApi, supportApi } from './src/api';
+import WelcomeScreen from './src/screens/WelcomeScreen';
+import { ThemeProvider, useTheme } from './src/theme';
+import { adminOrdersApi, authApi, cartApi, favoritesApi, ordersApi, productReviewsApi, productsApi, supportApi } from './src/api';
 
 const Stack = createNativeStackNavigator();
 
-function MainTabs({ route, navigation, cart, favorites, products, onRemove, onToggleFavorite, user, onLogout, notifications, onNotificationsOpen }) {
+function MainTabs({ route, navigation, cart, favorites, products, onRemove, onToggleFavorite, user, onLogout, notifications, onNotificationsOpen, themeMode, toggleTheme }) {
   const active = route.params?.screen || 'home';
-  const shared = { navigation, cartCount: cart.length, favorites, products, user, onToggleFavorite, notifications, onNotificationsOpen };
+  const shared = { navigation, cartCount: cart.length, favorites, products, user, onToggleFavorite, notifications, onNotificationsOpen, themeMode, toggleTheme };
   if (active === 'categories') return <CategoriesScreen {...shared} />;
   if (active === 'cart') return <CartScreen cart={cart} onRemove={onRemove} navigation={navigation} user={user} />;
   if (active === 'profile') return <ProfileScreen {...shared} user={user} onLogout={onLogout} />;
@@ -37,11 +39,12 @@ function MainTabs({ route, navigation, cart, favorites, products, onRemove, onTo
 }
 
 export default function App() {
-  return <SafeAreaProvider><MessageProvider><AppContent /></MessageProvider></SafeAreaProvider>;
+  return <ThemeProvider><SafeAreaProvider><MessageProvider><AppContent /></MessageProvider></SafeAreaProvider></ThemeProvider>;
 }
 
 function AppContent() {
   const { showMessage } = useMessage();
+  const { themeMode, toggleTheme, ready: themeReady } = useTheme();
   const [cart, setCart] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [products, setProducts] = useState([]);
@@ -93,7 +96,6 @@ function AppContent() {
   useEffect(() => {
     productsApi.get().then((result) => {
       setProducts(result.products);
-      if (result.offline) showMessage('Catálogo sin conexión', 'Mostramos productos guardados en este dispositivo. Los pedidos de una sesión local no se sincronizan con MongoDB.');
     }).catch((error) => showMessage('No se pudo cargar la tienda', error.message || 'Revisa tu conexión e inténtalo de nuevo.'));
     authApi.restore().then(async (session) => {
       if (session) {
@@ -208,23 +210,24 @@ function AppContent() {
   };
   const logout = async () => { await authApi.logout(); setUser(null); setToken(null); setCart([]); setFavorites([]); };
 
-  if (!ready) return null;
+  if (!ready || !themeReady) return null;
   return <NavigationContainer ref={(ref) => { navigationRef = ref; }}>
-      <StatusBar style="light" />
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Main">{(props) => <MainTabs {...props} cart={cart} favorites={favorites} products={products} onRemove={removeFromCart} onToggleFavorite={toggleFavorite} user={user} onLogout={logout} notifications={notifications} onNotificationsOpen={markNotificationsRead} />}</Stack.Screen>
-        <Stack.Screen name="Checkout">{(props) => <CheckoutScreen {...props} cart={cart} token={token} onUpdateQuantity={updateCartQuantity} onPaymentCompleted={completeCheckout} />}</Stack.Screen>
-        <Stack.Screen name="Product">{(props) => <ProductScreen {...props} onAdd={addToCart} onBuyNow={buyNow} />}</Stack.Screen>
-        <Stack.Screen name="Login">{(props) => <LoginScreen {...props} onAuth={handleAuth} />}</Stack.Screen>
-        <Stack.Screen name="AdminDashboard">{(props) => <AdminDashboardScreen {...props} user={user} token={token} />}</Stack.Screen>
-        <Stack.Screen name="AdminUsers">{(props) => <AdminUsersScreen {...props} token={token} />}</Stack.Screen>
-        <Stack.Screen name="AdminProducts">{(props) => <AdminProductsScreen {...props} token={token} />}</Stack.Screen>
-        <Stack.Screen name="OrderHistory">{(props) => <OrderHistoryScreen {...props} token={token} />}</Stack.Screen>
-        <Stack.Screen name="SupportChat">{(props) => <SupportChatScreen {...props} token={token} user={user} />}</Stack.Screen>
-        <Stack.Screen name="AdminOrders">{(props) => <AdminOrdersScreen {...props} token={token} />}</Stack.Screen>
-        <Stack.Screen name="AdminSupport">{(props) => <AdminSupportScreen {...props} token={token} />}</Stack.Screen>
-        <Stack.Screen name="Faq">{(props) => <FaqScreen {...props} />}</Stack.Screen>
-        <Stack.Screen name="EditProfile">{(props) => <EditProfileScreen {...props} token={token} user={user} onUserUpdated={setUser} />}</Stack.Screen>
+      <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
+      <Stack.Navigator initialRouteName="Welcome" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Welcome">{(props) => <WelcomeScreen {...props} />}</Stack.Screen>
+        <Stack.Screen name="Main">{(props) => <MainTabs {...props} cart={cart} favorites={favorites} products={products} onRemove={removeFromCart} onToggleFavorite={toggleFavorite} user={user} onLogout={logout} notifications={notifications} onNotificationsOpen={markNotificationsRead} themeMode={themeMode} toggleTheme={toggleTheme} />}</Stack.Screen>
+        <Stack.Screen name="Checkout">{(props) => <CheckoutScreen {...props} cart={cart} token={token} onUpdateQuantity={updateCartQuantity} onPaymentCompleted={completeCheckout} themeMode={themeMode} />}</Stack.Screen>
+        <Stack.Screen name="Product">{(props) => <ProductScreen {...props} user={user} token={token} onAdd={addToCart} onBuyNow={buyNow} onSubmitReview={async (product, review) => { if (!user) { requireLogin(); return null; } return productReviewsApi.add(product.id, review, token, user); }} themeMode={themeMode} />}</Stack.Screen>
+        <Stack.Screen name="Login">{(props) => <LoginScreen {...props} onAuth={handleAuth} themeMode={themeMode} />}</Stack.Screen>
+        <Stack.Screen name="AdminDashboard">{(props) => <AdminDashboardScreen {...props} user={user} token={token} themeMode={themeMode} />}</Stack.Screen>
+        <Stack.Screen name="AdminUsers">{(props) => <AdminUsersScreen {...props} token={token} themeMode={themeMode} />}</Stack.Screen>
+        <Stack.Screen name="AdminProducts">{(props) => <AdminProductsScreen {...props} token={token} themeMode={themeMode} />}</Stack.Screen>
+        <Stack.Screen name="OrderHistory">{(props) => <OrderHistoryScreen {...props} token={token} themeMode={themeMode} />}</Stack.Screen>
+        <Stack.Screen name="SupportChat">{(props) => <SupportChatScreen {...props} token={token} user={user} themeMode={themeMode} />}</Stack.Screen>
+        <Stack.Screen name="AdminOrders">{(props) => <AdminOrdersScreen {...props} token={token} themeMode={themeMode} />}</Stack.Screen>
+        <Stack.Screen name="AdminSupport">{(props) => <AdminSupportScreen {...props} token={token} themeMode={themeMode} />}</Stack.Screen>
+        <Stack.Screen name="Faq">{(props) => <FaqScreen {...props} themeMode={themeMode} />}</Stack.Screen>
+        <Stack.Screen name="EditProfile">{(props) => <EditProfileScreen {...props} token={token} user={user} onUserUpdated={setUser} themeMode={themeMode} />}</Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>;
 }

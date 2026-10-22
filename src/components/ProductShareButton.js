@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Linking, Modal, Platform, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Icon from './Icon';
-import { colors, formatPrice } from '../theme';
+import { colors, formatPrice, createAdaptiveStyles } from '../theme';
 
 const SOCIAL_OPTIONS = [
   { id: 'facebook', label: 'Facebook', color: '#1877F2' },
@@ -72,7 +72,7 @@ export default function ProductShareButton({ product, compact = false }) {
         <Pressable style={styles.sheet} onPress={(event) => event.stopPropagation()}>
           <View style={styles.sheetHeader}>
             <View style={styles.sheetTitleWrap}>
-              <View style={styles.titleIcon}><Icon name="share-variant-outline" size={18} color={colors.background} /></View>
+              <View style={styles.titleIcon}><Icon name="share-variant-outline" size={18} color={colors.ink} /></View>
               <View style={styles.titleCopy}>
                 <Text style={styles.title}>Compartir producto</Text>
                 <Text style={styles.productName} numberOfLines={1}>{product.name} · {formatPrice(product.price)}</Text>
@@ -105,7 +105,7 @@ export default function ProductShareButton({ product, compact = false }) {
   </>;
 }
 
-const styles = StyleSheet.create({
+const styles = createAdaptiveStyles({
   trigger: { width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(9,7,15,0.78)', alignItems: 'center', justifyContent: 'center' },
   compactTrigger: { width: 29, height: 29 },
   overlay: { flex: 1, backgroundColor: 'rgba(4, 3, 9, 0.78)', alignItems: 'center', justifyContent: 'center', padding: 22 },

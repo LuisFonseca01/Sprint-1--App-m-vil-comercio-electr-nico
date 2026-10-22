@@ -453,6 +453,54 @@ export const productsApi = {
   },
 };
 
+async function getLocalReviews(productId, token) {
+  return readJson(localKey(`reviews_${encodeURIComponent(productId)}`, token || 'guest'), []);
+}
+
+async function saveLocalReview(productId, review, token) {
+  const key = localKey(`reviews_${encodeURIComponent(productId)}`, token || 'guest');
+  const reviews = await readJson(key, []);
+  const existingIndex = reviews.findIndex((item) => item.authorId === review.authorId);
+  const nextReviews = existingIndex >= 0
+    ? reviews.map((item, index) => index === existingIndex ? review : item)
+    : [review, ...reviews];
+  await writeJson(key, nextReviews);
+  return nextReviews;
+}
+
+export const productReviewsApi = {
+  async get(productId, token) {
+    if (isLocalToken(token)) return { reviews: await getLocalReviews(productId, token), offline: true };
+    try {
+      const result = await request(`/products/${encodeURIComponent(productId)}/reviews`, {}, token);
+      return { reviews: result.reviews || [] };
+    } catch (error) {
+      if (error.code !== 'NETWORK_ERROR') throw error;
+      return { reviews: await getLocalReviews(productId, token), offline: true };
+    }
+  },
+  async add(productId, payload, token, user) {
+    const rating = Number(payload.rating);
+    const text = typeof payload.text === 'string' ? payload.text.trim() : '';
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) throw new Error('Selecciona una calificación de 1 a 5 estrellas.');
+    if (!text || text.length > 1000) throw new Error('Escribe una reseña de hasta 1000 caracteres.');
+    if (!token || isLocalToken(token)) {
+      const review = { authorId: user?.id || 'guest', userName: user?.name || 'Usuario', rating, text, createdAt: new Date().toISOString() };
+      return { review, reviews: await saveLocalReview(productId, review, token), offline: true };
+    }
+    try {
+      return await request(`/products/${encodeURIComponent(productId)}/reviews`, {
+        method: 'POST',
+        body: JSON.stringify({ rating, text }),
+      }, token);
+    } catch (error) {
+      if (error.code !== 'NETWORK_ERROR') throw error;
+      const review = { authorId: user?.id || token, userName: user?.name || 'Usuario', rating, text, createdAt: new Date().toISOString() };
+      return { review, reviews: await saveLocalReview(productId, review, token), offline: true };
+    }
+  },
+};
+
 export const adminApi = {
   dashboard: async (token) => {
     try { return await request('/admin/dashboard', {}, token); } catch (error) {

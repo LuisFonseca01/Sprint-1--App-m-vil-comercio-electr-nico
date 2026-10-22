@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Icon from './Icon';
-import { colors } from '../theme';
+import { colors, createAdaptiveStyles } from '../theme';
 
 function notificationIcon(type) {
   if (type === 'favorite') return 'heart';
@@ -29,7 +29,7 @@ export default function NotificationBell({ notifications = [], onOpen }) {
         <Pressable style={styles.panel} onPress={(event) => event.stopPropagation()}>
           <View style={styles.header}>
             <View style={styles.titleWrap}>
-              <View style={styles.titleIcon}><Icon name="bell-ring-outline" size={18} color={colors.background} /></View>
+              <View style={styles.titleIcon}><Icon name="bell-ring-outline" size={18} color={colors.ink} /></View>
               <View><Text style={styles.title}>Notificaciones</Text><Text style={styles.subtitle}>{notifications.length ? 'Actividad reciente de tu cuenta' : 'Aquí verás las novedades de tu cuenta'}</Text></View>
             </View>
             <Pressable onPress={close} accessibilityRole="button" accessibilityLabel="Cerrar notificaciones"><Icon name="close" size={21} color={colors.muted} /></Pressable>
@@ -54,10 +54,10 @@ export default function NotificationBell({ notifications = [], onOpen }) {
   </>;
 }
 
-const styles = StyleSheet.create({
+const styles = createAdaptiveStyles({
   bellButton: { width: 45, height: 45, borderRadius: 15, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line },
   badge: { position: 'absolute', top: -5, right: -5, minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 4, backgroundColor: colors.pink, alignItems: 'center', justifyContent: 'center' },
-  badgeText: { color: colors.background, fontSize: 9, fontWeight: '900' },
+  badgeText: { color: colors.ink, fontSize: 9, fontWeight: '900' },
   overlay: { flex: 1, backgroundColor: 'rgba(4, 3, 9, 0.78)', alignItems: 'center', justifyContent: 'flex-start', padding: 18, paddingTop: 65 },
   panel: { width: '100%', maxWidth: 460, maxHeight: '78%', backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 21, padding: 16 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingBottom: 13, borderBottomWidth: 1, borderBottomColor: colors.line },

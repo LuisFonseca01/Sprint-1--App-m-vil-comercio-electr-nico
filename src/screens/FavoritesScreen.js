@@ -3,7 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import ProductCard from '../components/ProductCard';
 import BottomNav from '../components/BottomNav';
 import Icon from '../components/Icon';
-import { colors } from '../theme';
+import { colors, createAdaptiveStyles } from '../theme';
 
 export default function FavoritesScreen({ navigation, cartCount, favorites = [], onToggleFavorite }) {
   return <SafeAreaView style={styles.safeArea}>
@@ -12,4 +12,4 @@ export default function FavoritesScreen({ navigation, cartCount, favorites = [],
   </SafeAreaView>;
 }
 
-const styles = StyleSheet.create({ safeArea: { flex: 1, backgroundColor: colors.background }, content: { padding: 18, paddingBottom: 105 }, kicker: { color: colors.purpleBright, fontSize: 10, fontWeight: '900', letterSpacing: 1.4, marginTop: 12 }, title: { color: colors.white, fontSize: 32, fontWeight: '900', marginTop: 5 }, intro: { color: colors.muted, fontSize: 14, marginTop: 8, marginBottom: 23 }, columns: { justifyContent: 'space-between', marginBottom: 15 }, empty: { alignItems: 'center', paddingHorizontal: 28, paddingVertical: 80 }, emptyTitle: { color: colors.white, fontSize: 18, fontWeight: '900', marginTop: 14 }, emptyText: { color: colors.muted, textAlign: 'center', lineHeight: 20, marginTop: 7 } });
+const styles = createAdaptiveStyles({ safeArea: { flex: 1, backgroundColor: colors.background }, content: { padding: 18, paddingBottom: 105 }, kicker: { color: colors.purpleBright, fontSize: 10, fontWeight: '900', letterSpacing: 1.4, marginTop: 12 }, title: { color: colors.white, fontSize: 32, fontWeight: '900', marginTop: 5 }, intro: { color: colors.muted, fontSize: 14, marginTop: 8, marginBottom: 23 }, columns: { justifyContent: 'space-between', marginBottom: 15 }, empty: { alignItems: 'center', paddingHorizontal: 28, paddingVertical: 80 }, emptyTitle: { color: colors.white, fontSize: 18, fontWeight: '900', marginTop: 14 }, emptyText: { color: colors.muted, textAlign: 'center', lineHeight: 20, marginTop: 7 } });

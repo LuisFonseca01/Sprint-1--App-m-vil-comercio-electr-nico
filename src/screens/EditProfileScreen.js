@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import Icon from '../components/Icon';
 import { useMessage } from '../components/MessageProvider';
 import { authApi } from '../api';
-import { colors } from '../theme';
+import { colors, createAdaptiveStyles } from '../theme';
 
 function Field({ label, value, onChangeText, placeholder, secureTextEntry, keyboardType, autoCapitalize, editable = true }) {
   const [showValue, setShowValue] = useState(false);
@@ -96,7 +96,7 @@ export default function EditProfileScreen({ navigation, token, user, onUserUpdat
       <Text style={styles.kicker}>GAMECUBE ID</Text>
       <Text style={styles.title}>Editar perfil</Text>
       <Pressable style={styles.photoPicker} onPress={choosePhoto} accessibilityRole="button" accessibilityLabel="Elegir foto de perfil">
-        {photo ? <Image source={{ uri: photo }} style={styles.photo} /> : <View style={styles.photoPlaceholder}><Icon name="account-circle-outline" size={40} color={colors.background} /></View>}
+        {photo ? <Image source={{ uri: photo }} style={styles.photo} /> : <View style={styles.photoPlaceholder}><Icon name="account-circle-outline" size={40} color={colors.ink} /></View>}
         <View style={styles.photoCopy}><Text style={styles.photoTitle}>Foto de perfil</Text><Text style={styles.photoHint}>Toca para cambiar tu imagen</Text></View>
         <Icon name="camera-outline" size={21} color={colors.purpleBright} />
       </Pressable>
@@ -112,13 +112,13 @@ export default function EditProfileScreen({ navigation, token, user, onUserUpdat
         <Field label="NUEVA CONTRASEÑA" value={newPassword} onChangeText={setNewPassword} placeholder="Mínimo 8 caracteres" secureTextEntry autoCapitalize="none" />
       </View>
       <Pressable style={[styles.save, saving && styles.saveDisabled]} onPress={save} disabled={saving}>
-        {saving ? <ActivityIndicator color={colors.background} /> : <Text style={styles.saveText}>Guardar cambios</Text>}
+        {saving ? <ActivityIndicator color={colors.ink} /> : <Text style={styles.saveText}>Guardar cambios</Text>}
       </Pressable>
     </ScrollView>
   </SafeAreaView>;
 }
 
-const styles = StyleSheet.create({
+const styles = createAdaptiveStyles({
   safeArea: { flex: 1, backgroundColor: colors.background },
   content: { padding: 18, paddingBottom: 40 },
   back: { width: 40, height: 40, borderRadius: 12, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', marginTop: 10, marginBottom: 20 },
@@ -142,5 +142,5 @@ const styles = StyleSheet.create({
   passwordTitle: { color: colors.white, fontSize: 14, fontWeight: '900' },
   save: { minHeight: 49, borderRadius: 13, backgroundColor: colors.lime, alignItems: 'center', justifyContent: 'center', marginTop: 19 },
   saveDisabled: { opacity: 0.65 },
-  saveText: { color: colors.background, fontSize: 13, fontWeight: '900' },
+  saveText: { color: colors.ink, fontSize: 13, fontWeight: '900' },
 });

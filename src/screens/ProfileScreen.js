@@ -2,7 +2,7 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from '../components/Icon';
 import BottomNav from '../components/BottomNav';
-import { colors } from '../theme';
+import { colors, createAdaptiveStyles } from '../theme';
 
 export default function ProfileScreen({ navigation, cartCount, user, onLogout }) {
   const links = [
@@ -17,7 +17,7 @@ export default function ProfileScreen({ navigation, cartCount, user, onLogout })
       <Text style={styles.title}>Tu perfil</Text>
       {user ? <>
         <View style={styles.profile}>
-          {user.photo ? <Image source={{ uri: user.photo }} style={styles.avatarImage} /> : <View style={styles.avatar}><Icon name="account-circle" size={32} color={colors.background} /></View>}
+          {user.photo ? <Image source={{ uri: user.photo }} style={styles.avatarImage} /> : <View style={styles.avatar}><Icon name="account-circle" size={32} color={colors.ink} /></View>}
           <View style={styles.profileInfo}>
             <Text style={styles.profileTitle}>{user.name}</Text>
             <Text style={styles.profileSubtitle}>{user.email}</Text>
@@ -25,17 +25,17 @@ export default function ProfileScreen({ navigation, cartCount, user, onLogout })
           </View>
         </View>
         <Pressable style={styles.edit} onPress={() => navigation.navigate('EditProfile')} accessibilityRole="button">
-          <Icon name="account-edit-outline" size={20} color={colors.background} /><Text style={styles.editText}>Editar perfil</Text>
+          <Icon name="account-edit-outline" size={20} color={colors.ink} /><Text style={styles.editText}>Editar perfil</Text>
         </Pressable>
         <Pressable style={styles.logout} onPress={onLogout}>
           <Icon name="logout-variant" size={20} color={colors.white} /><Text style={styles.logoutText}>Cerrar sesión</Text>
         </Pressable>
       </> : <>
         <View style={styles.profile}>
-          <View style={styles.avatar}><Icon name="account-circle-outline" size={32} color={colors.background} /></View>
+          <View style={styles.avatar}><Icon name="account-circle-outline" size={32} color={colors.ink} /></View>
           <View style={styles.profileInfo}><Text style={styles.profileTitle}>Aún no has iniciado sesión</Text><Text style={styles.profileSubtitle}>Guarda tus datos para comprar más rápido</Text></View>
         </View>
-        <Pressable style={styles.edit} onPress={() => navigation.navigate('Login')}><Icon name="login-variant" size={20} color={colors.background} /><Text style={styles.editText}>Iniciar sesión</Text></Pressable>
+        <Pressable style={styles.edit} onPress={() => navigation.navigate('Login')}><Icon name="login-variant" size={20} color={colors.ink} /><Text style={styles.editText}>Iniciar sesión</Text></Pressable>
         <Pressable style={styles.register} onPress={() => navigation.navigate('Login')}><Icon name="account-plus-outline" size={20} color={colors.purpleBright} /><Text style={styles.registerText}>Crear una cuenta</Text></Pressable>
       </>}
       <View style={styles.links}>
@@ -48,7 +48,7 @@ export default function ProfileScreen({ navigation, cartCount, user, onLogout })
   </SafeAreaView>;
 }
 
-const styles = StyleSheet.create({
+const styles = createAdaptiveStyles({
   safeArea: { flex: 1, backgroundColor: colors.background },
   content: { padding: 18, paddingBottom: 120 },
   kicker: { color: colors.purpleBright, fontSize: 10, fontWeight: '900', letterSpacing: 1.4, marginTop: 12 },
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   profileTitle: { color: colors.white, fontSize: 14, fontWeight: '800' },
   profileSubtitle: { color: colors.muted, fontSize: 11, marginTop: 5 },
   edit: { height: 49, borderRadius: 14, backgroundColor: colors.lime, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 15 },
-  editText: { color: colors.background, fontSize: 13, fontWeight: '900' },
+  editText: { color: colors.ink, fontSize: 13, fontWeight: '900' },
   logout: { height: 46, borderRadius: 14, borderWidth: 1, borderColor: colors.line, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 9 },
   logoutText: { color: colors.white, fontSize: 12, fontWeight: '800' },
   register: { height: 49, borderRadius: 14, borderWidth: 1, borderColor: colors.purpleBright, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10 },

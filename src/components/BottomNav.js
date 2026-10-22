@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Icon from './Icon';
-import { colors } from '../theme';
+import { colors, createAdaptiveStyles } from '../theme';
 
 export default function BottomNav({ active, navigation, cartCount }) {
   const items = [
@@ -20,11 +20,11 @@ export default function BottomNav({ active, navigation, cartCount }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createAdaptiveStyles({
   nav: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 79, backgroundColor: '#100C1A', borderTopWidth: 1, borderTopColor: colors.line, flexDirection: 'row', justifyContent: 'space-around', paddingTop: 12, zIndex: 100, elevation: 24, boxShadow: '0px -5px 12px rgba(0, 0, 0, 0.35)' },
   item: { alignItems: 'center', width: 74 },
   label: { color: colors.muted, fontSize: 10, marginTop: 4, fontWeight: '700' },
   activeLabel: { color: colors.lime },
   badge: { position: 'absolute', right: -8, top: -4, backgroundColor: colors.pink, width: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-  badgeText: { color: colors.background, fontSize: 8, fontWeight: '900' },
+  badgeText: { color: colors.ink, fontSize: 8, fontWeight: '900' },
 });

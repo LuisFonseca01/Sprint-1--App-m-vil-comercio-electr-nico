@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import Icon from '../components/Icon';
 import { supportApi } from '../api';
-import { colors } from '../theme';
+import { colors, createAdaptiveStyles } from '../theme';
 
 function messageId(message) {
   return message.id || message._id || `${message.createdAt}-${message.text}`;
@@ -91,7 +91,7 @@ export default function AdminSupportScreen({ navigation, token }) {
           <View style={styles.composer}>
             <TextInput value={draft} onChangeText={setDraft} onSubmitEditing={send} placeholder="Responder..." placeholderTextColor={colors.muted} style={styles.input} multiline maxLength={1000} />
             <Pressable onPress={send} disabled={!draft.trim() || sending} style={[styles.send, (!draft.trim() || sending) && styles.sendDisabled]} accessibilityLabel="Enviar respuesta">
-              <Icon name="send" size={20} color={colors.background} />
+              <Icon name="send" size={20} color={colors.ink} />
             </Pressable>
           </View>
         </>}
@@ -100,7 +100,7 @@ export default function AdminSupportScreen({ navigation, token }) {
   </SafeAreaView>;
 }
 
-const styles = StyleSheet.create({
+const styles = createAdaptiveStyles({
   safeArea: { flex: 1, backgroundColor: colors.background },
   container: { flex: 1 },
   header: { height: 74, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, gap: 12, borderBottomWidth: 1, borderBottomColor: colors.line },

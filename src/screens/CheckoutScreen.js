@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from '../components/Icon';
-import { colors, formatPrice } from '../theme';
+import { colors, formatPrice, createAdaptiveStyles } from '../theme';
 
 const SHIPPING_COST = 0;
 const PAYMENT_METHODS = [
@@ -122,7 +122,7 @@ export default function CheckoutScreen({ navigation, cart, onUpdateQuantity, onP
     const methodLabel = PAYMENT_METHODS.find((method) => method.id === order.paymentMethod)?.label;
     return <SafeAreaView style={styles.safeArea}>
       <View style={styles.success}>
-        <View style={styles.successIcon}><Icon name="check" size={45} color={colors.background} /></View>
+        <View style={styles.successIcon}><Icon name="check" size={45} color={colors.ink} /></View>
         <Text style={styles.kicker}>PAGO SIMULADO</Text>
         <Text style={styles.title}>¡Pedido confirmado!</Text>
         <Text style={styles.copy}>El pago es una simulación: no hubo cargos reales ni se enviaron datos a servicios externos. Tu pedido quedó registrado y puedes consultar aquí sus actualizaciones.</Text>
@@ -250,14 +250,14 @@ export default function CheckoutScreen({ navigation, cart, onUpdateQuantity, onP
         </View> : null}
         <Pressable style={[styles.primary, loading && styles.primaryDisabled]} onPress={pay} disabled={loading}>
           <Text style={styles.primaryText}>{loading ? 'Guardando simulación...' : `Simular pago de ${formatPrice(total)}`}</Text>
-          {!loading && <Icon name="check-circle-outline" size={18} color={colors.background} />}
+          {!loading && <Icon name="check-circle-outline" size={18} color={colors.ink} />}
         </Pressable>
       </>}
     </ScrollView>
   </SafeAreaView>;
 }
 
-const styles = StyleSheet.create({
+const styles = createAdaptiveStyles({
   safeArea: { flex: 1, backgroundColor: colors.background },
   content: { padding: 20, paddingBottom: 40 },
   back: { flexDirection: 'row', alignItems: 'center', gap: 9, marginTop: 8, marginBottom: 18 },
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   error: { color: colors.danger, fontSize: 12, lineHeight: 18, flex: 1 },
   primary: { minHeight: 50, paddingHorizontal: 18, borderRadius: 14, backgroundColor: colors.lime, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 9, marginTop: 20 },
   primaryDisabled: { opacity: 0.55 },
-  primaryText: { color: colors.background, fontSize: 13, fontWeight: '900' },
+  primaryText: { color: colors.ink, fontSize: 13, fontWeight: '900' },
   secondary: { minHeight: 46, paddingHorizontal: 18, borderRadius: 13, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center', marginTop: 18 },
   secondaryText: { color: colors.white, fontSize: 13, fontWeight: '800' },
   empty: { alignItems: 'center', paddingTop: 60 },

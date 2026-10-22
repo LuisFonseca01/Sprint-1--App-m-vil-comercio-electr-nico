@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from '../components/Icon';
 import { useMessage } from '../components/MessageProvider';
 import { adminApi } from '../api';
-import { colors } from '../theme';
+import { colors, createAdaptiveStyles } from '../theme';
 
 export default function AdminUsersScreen({ navigation, token }) {
   const { showMessage } = useMessage();
@@ -87,7 +87,7 @@ export default function AdminUsersScreen({ navigation, token }) {
   </SafeAreaView>;
 }
 
-const styles = StyleSheet.create({
+const styles = createAdaptiveStyles({
   safeArea: { flex: 1, backgroundColor: colors.background },
   loader: { flex: 1 },
   content: { padding: 18, paddingBottom: 35 },
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   kicker: { color: colors.purpleBright, fontSize: 10, fontWeight: '900', letterSpacing: 1.3 },
   title: { color: colors.white, fontSize: 28, fontWeight: '900', marginTop: 4 },
   count: { marginLeft: 'auto', backgroundColor: colors.lime, minWidth: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  countText: { color: colors.background, fontWeight: '900' },
+  countText: { color: colors.ink, fontWeight: '900' },
   row: { backgroundColor: colors.card, borderRadius: 15, padding: 13, flexDirection: 'row', alignItems: 'center', marginBottom: 10, borderWidth: 1, borderColor: colors.line },
   avatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.purple, alignItems: 'center', justifyContent: 'center', marginRight: 11 },
   avatarText: { color: colors.white, fontWeight: '900', fontSize: 16 },
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   formActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 15, marginTop: 13 },
   cancel: { color: colors.muted, fontWeight: '800' },
   save: { backgroundColor: colors.lime, borderRadius: 10, paddingHorizontal: 13, paddingVertical: 10, alignItems: 'center', marginTop: 12 },
-  saveText: { color: colors.background, fontWeight: '900', fontSize: 11 },
+  saveText: { color: colors.ink, fontWeight: '900', fontSize: 11 },
   disabled: { opacity: 0.6 },
   empty: { alignItems: 'center', padding: 30, gap: 10 },
 });

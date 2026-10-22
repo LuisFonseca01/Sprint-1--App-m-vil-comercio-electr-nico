@@ -1,10 +1,17 @@
-Este es el la segunda fase de desarrollo, revisión y ajuste de los Sprints y el backlog del proyecto para la elaboración de una app movil de comercio electrónico para la asignatura de Proyecto II, en el se siguen los parámetros y requerimientos de la metodología ágil SCRUM. 
+Esta es la tercera y ultima fase de desarrollo, revisión y ajuste de los Sprints y el backlog del proyecto para la elaboración de una app movil de comercio electrónico para la asignatura de Proyecto II, en el se siguen los parámetros y requerimientos de la metodología ágil SCRUM. 
 
 # Gamecube
 
 Gamecube es una app de comercio electrónico sobre productos gaming. 
 
 La aplicación está hecha con Expo y React Native. Los usuarios, productos, carritos, pedidos y mensajes de seguimiento de las sesiones conectadas se guardan en MongoDB Atlas. Los pedidos de las sesiones locales de demostración se guardan en el dispositivo.
+
+## Añadido en esta ultima fase: Bienvenida, reseñas y temas
+
+- Al abrir la app aparece la pantalla de bienvenida; **Comenzar a explorar** lleva a la tienda.
+- En el detalle de cada producto, las personas con sesión iniciada pueden publicar una calificación de 1 a 5 estrellas y un comentario. Las sesiones conectadas guardan las reseñas en MongoDB y las cuentas de demostración las guardan localmente en el dispositivo.
+- El botón de sol/luna de la pantalla principal alterna entre modo claro y oscuro. La preferencia se conserva en el dispositivo.
+- La búsqueda de productos permite combinar texto y categoría con filtros de precio y calificación, además de ordenar por relevancia, precio o puntuación.
 
 
 ## Qué necesitas

@@ -38,6 +38,12 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);
+const productReviewSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  userName: { type: String, required: true, trim: true },
+  rating: { type: Number, required: true, min: 1, max: 5 },
+  text: { type: String, required: true, trim: true, maxlength: 1000 },
+}, { timestamps: true });
 const productSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   name: { type: String, required: true },
@@ -53,6 +59,7 @@ const productSchema = new mongoose.Schema({
   description: String,
   specs: [String],
   retailerSources: [String],
+  reviews: { type: [productReviewSchema], default: [] },
 }, { timestamps: true });
 const Product = mongoose.model('Product', productSchema);
 const orderSchema = new mongoose.Schema({
@@ -126,6 +133,46 @@ app.get('/api/health', (req, res) => res.json({ ok: true }));
 app.get('/api/products', async (req, res) => {
   try { res.json(await Product.find({}).sort({ category: 1, id: 1 })); }
   catch (error) { res.status(500).json({ message: 'No se pudieron obtener los productos', error: error.message }); }
+});
+
+app.get('/api/products/:id/reviews', async (req, res) => {
+  try {
+    const product = await Product.findOne({ id: req.params.id }).select('reviews');
+    if (!product) return res.status(404).json({ message: 'Producto no encontrado' });
+    const reviews = [...product.reviews].sort((a, b) => b.createdAt - a.createdAt);
+    res.json({ reviews });
+  } catch {
+    res.status(500).json({ message: 'No se pudieron cargar las reseñas' });
+  }
+});
+
+app.post('/api/products/:id/reviews', auth, async (req, res) => {
+  const rating = Number(req.body.rating);
+  const text = typeof req.body.text === 'string' ? req.body.text.trim() : '';
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) return res.status(400).json({ message: 'La calificación debe tener entre 1 y 5 estrellas' });
+  if (!text || text.length > 1000) return res.status(400).json({ message: 'Escribe una reseña de hasta 1000 caracteres' });
+  try {
+    const [product, user] = await Promise.all([
+      Product.findOne({ id: req.params.id }),
+      User.findById(req.userId).select('name'),
+    ]);
+    if (!product) return res.status(404).json({ message: 'Producto no encontrado' });
+    if (!user) return res.status(404).json({ message: 'No se encontró la cuenta para publicar la reseña' });
+
+    let review = product.reviews.find((item) => String(item.user) === String(user.id));
+    if (!review) {
+      product.reviews.push({ user: user.id, userName: user.name, rating, text });
+      review = product.reviews[product.reviews.length - 1];
+    } else {
+      review.rating = rating;
+      review.text = text;
+      review.userName = user.name;
+    }
+    await product.save();
+    res.json({ review, reviews: [...product.reviews].sort((a, b) => b.createdAt - a.createdAt) });
+  } catch {
+    res.status(500).json({ message: 'No se pudo guardar la reseña' });
+  }
 });
 
 app.post('/api/auth/register', async (req, res) => {

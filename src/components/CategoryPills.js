@@ -1,7 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import Icon from './Icon';
 import { categories } from '../data/products';
-import { colors } from '../theme';
+import { colors, createAdaptiveStyles } from '../theme';
 
 export default function CategoryPills({ selected, onSelect }) {
   return (
@@ -16,10 +16,10 @@ export default function CategoryPills({ selected, onSelect }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createAdaptiveStyles({
   list: { gap: 9, paddingBottom: 22 },
   pill: { height: 42, paddingHorizontal: 14, borderRadius: 21, backgroundColor: colors.surface, flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1, borderColor: colors.line },
   active: { backgroundColor: colors.lime, borderColor: colors.lime },
   text: { color: colors.white, fontSize: 11, fontWeight: '800' },
-  activeText: { color: colors.background },
+  activeText: { color: colors.ink },
 });

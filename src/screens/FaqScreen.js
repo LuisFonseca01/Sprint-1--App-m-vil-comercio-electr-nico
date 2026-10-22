@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from '../components/Icon';
-import { colors } from '../theme';
+import { colors, createAdaptiveStyles } from '../theme';
 
 const QUESTIONS = [
   ['¿Cómo hago un pedido?', 'Añade los productos al carrito, revisa el resumen, completa tu dirección y confirma el método de pago de demostración.'],
@@ -36,7 +36,7 @@ export default function FaqScreen({ navigation }) {
   </SafeAreaView>;
 }
 
-const styles = StyleSheet.create({
+const styles = createAdaptiveStyles({
   safeArea: { flex: 1, backgroundColor: colors.background },
   content: { padding: 18, paddingBottom: 35 },
   back: { width: 40, height: 40, borderRadius: 12, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', marginTop: 10, marginBottom: 22 },

@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import Icon from '../components/Icon';
 import { ordersApi } from '../api';
-import { colors, formatPrice } from '../theme';
+import { colors, formatPrice, createAdaptiveStyles } from '../theme';
 
 const STATUS_FILTERS = [
   { id: 'all', label: 'Todos' },
@@ -137,7 +137,7 @@ export default function OrderHistoryScreen({ navigation, token }) {
             <Icon name={expanded ? 'expand-less' : 'expand-more'} size={21} color={colors.muted} />
           </Pressable>
           {latestUpdate && <View style={styles.notification}>
-            <View style={styles.notificationIcon}><Icon name="bell-ring-outline" size={17} color={colors.background} /></View>
+            <View style={styles.notificationIcon}><Icon name="bell-ring-outline" size={17} color={colors.ink} /></View>
             <View style={styles.notificationCopy}>
               <Text style={styles.notificationTitle}>Actualización · {statusLabel(latestUpdate.status)}</Text>
               <Text style={styles.notificationMessage}>{latestUpdate.message}</Text>
@@ -179,7 +179,7 @@ export default function OrderHistoryScreen({ navigation, token }) {
   </SafeAreaView>;
 }
 
-const styles = StyleSheet.create({
+const styles = createAdaptiveStyles({
   safeArea: { flex: 1, backgroundColor: colors.background },
   content: { padding: 18, paddingBottom: 40 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 13, marginTop: 12, marginBottom: 20 },

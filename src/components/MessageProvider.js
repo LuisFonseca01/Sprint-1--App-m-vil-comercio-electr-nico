@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import Icon from './Icon';
-import { colors } from '../theme';
+import { colors, createAdaptiveStyles } from '../theme';
 
 const MessageContext = createContext(null);
 
@@ -23,7 +23,7 @@ export function MessageProvider({ children }) {
     <Modal transparent visible={Boolean(message)} animationType="fade" onRequestClose={() => close()}>
       <View style={styles.overlay}>
         <View style={styles.card}>
-          <View style={styles.icon}><Icon name="information-outline" size={24} color={colors.background} /></View>
+          <View style={styles.icon}><Icon name="information-outline" size={24} color={colors.ink} /></View>
           <Text style={styles.title}>{message?.title}</Text>
           <Text style={styles.text}>{message?.text}</Text>
           <View style={styles.actions}>
@@ -43,7 +43,7 @@ export function useMessage() {
   return context;
 }
 
-const styles = StyleSheet.create({
+const styles = createAdaptiveStyles({
   overlay: { flex: 1, backgroundColor: 'rgba(4, 3, 9, 0.78)', alignItems: 'center', justifyContent: 'center', padding: 24 },
   card: { width: '100%', maxWidth: 420, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 22, padding: 22, alignItems: 'center' },
   icon: { width: 48, height: 48, borderRadius: 16, backgroundColor: colors.lime, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   button: { minWidth: 105, backgroundColor: colors.lime, paddingHorizontal: 15, paddingVertical: 11, borderRadius: 12, alignItems: 'center' },
   secondaryButton: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
   destructiveButton: { backgroundColor: colors.danger },
-  buttonText: { color: colors.background, fontSize: 12, fontWeight: '900' },
+  buttonText: { color: colors.ink, fontSize: 12, fontWeight: '900' },
   secondaryText: { color: colors.white },
   destructiveText: { color: colors.white },
 });

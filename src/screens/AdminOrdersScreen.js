@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, T
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from '../components/Icon';
 import { adminOrdersApi } from '../api';
-import { colors, formatPrice } from '../theme';
+import { colors, formatPrice, createAdaptiveStyles } from '../theme';
 
 const STATUSES = [
   { id: 'processing', label: 'En proceso' },
@@ -64,7 +64,7 @@ export default function AdminOrdersScreen({ navigation, token }) {
         const customer = typeof order.user === 'object' ? order.user : null;
         return <View key={id} style={styles.card}>
           <View style={styles.row}>
-            <View style={styles.orderMark}><Icon name="receipt-long" size={19} color={colors.background} /></View>
+            <View style={styles.orderMark}><Icon name="receipt-long" size={19} color={colors.ink} /></View>
             <View style={styles.orderInfo}>
               <Text style={styles.orderId}>#{String(id).slice(-8)}</Text>
               <Text style={styles.customer}>{customer?.name || order.customerName || 'Cliente'}</Text>
@@ -89,7 +89,7 @@ export default function AdminOrdersScreen({ navigation, token }) {
   </SafeAreaView>;
 }
 
-const styles = StyleSheet.create({
+const styles = createAdaptiveStyles({
   safeArea: { flex: 1, backgroundColor: colors.background },
   content: { padding: 18, paddingBottom: 35 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 12, marginBottom: 8 },
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   kicker: { color: colors.purpleBright, fontSize: 10, fontWeight: '900', letterSpacing: 1.3 },
   title: { color: colors.white, fontSize: 28, fontWeight: '900', marginTop: 4 },
   count: { minWidth: 32, height: 32, borderRadius: 16, backgroundColor: colors.lime, alignItems: 'center', justifyContent: 'center' },
-  countText: { color: colors.background, fontWeight: '900' },
+  countText: { color: colors.ink, fontWeight: '900' },
   subtitle: { color: colors.muted, fontSize: 11, lineHeight: 17, marginBottom: 14 },
   loader: { marginTop: 45 },
   errorCard: { backgroundColor: colors.card, padding: 12, borderRadius: 12, marginBottom: 12 },

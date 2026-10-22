@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import Icon from '../components/Icon';
 import { supportApi } from '../api';
-import { colors } from '../theme';
+import { colors, createAdaptiveStyles } from '../theme';
 
 function messageId(message) {
   return message.id || message._id || `${message.createdAt}-${message.text}`;
@@ -57,7 +57,7 @@ export default function SupportChatScreen({ navigation, token, user }) {
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={10}>
       <View style={styles.header}>
         <Pressable style={styles.back} onPress={() => navigation.goBack()}><Icon name="arrow-left" size={21} color={colors.white} /></Pressable>
-        <View style={styles.supportAvatar}><Icon name="lifebuoy" size={21} color={colors.background} /></View>
+        <View style={styles.supportAvatar}><Icon name="lifebuoy" size={21} color={colors.ink} /></View>
         <View style={styles.headerInfo}><Text style={styles.title}>Soporte Gamecube</Text><View style={styles.presence}><View style={styles.onlineDot} /><Text style={styles.subtitle}>En línea · actualización automática</Text></View></View>
       </View>
       <ScrollView ref={scrollRef} style={styles.messages} contentContainerStyle={styles.messagesContent} keyboardShouldPersistTaps="handled">
@@ -81,7 +81,7 @@ export default function SupportChatScreen({ navigation, token, user }) {
       <View style={styles.composer}>
         <TextInput value={draft} onChangeText={setDraft} onSubmitEditing={send} placeholder="Escribe un mensaje..." placeholderTextColor={colors.muted} style={styles.input} multiline maxLength={1000} />
         <Pressable onPress={send} disabled={!draft.trim() || sending} style={[styles.send, (!draft.trim() || sending) && styles.sendDisabled]} accessibilityLabel="Enviar mensaje">
-          <Icon name="send" size={20} color={colors.background} />
+          <Icon name="send" size={20} color={colors.ink} />
         </Pressable>
       </View>
       <Text style={styles.privacy}>No compartas contraseñas ni datos completos de tarjetas.</Text>
@@ -89,7 +89,7 @@ export default function SupportChatScreen({ navigation, token, user }) {
   </SafeAreaView>;
 }
 
-const styles = StyleSheet.create({
+const styles = createAdaptiveStyles({
   safeArea: { flex: 1, backgroundColor: colors.background },
   container: { flex: 1 },
   header: { height: 76, borderBottomWidth: 1, borderBottomColor: colors.line, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, gap: 11 },
